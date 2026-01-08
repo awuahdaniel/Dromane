@@ -1,0 +1,23 @@
+# Secrets & Environment Variables - CRITICAL
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Dependencies
+node_modules/
+backend-auth/vendor/
+backend-ai/venv/
+backend-ai/__pycache__/
+*.pyc
+
+# IDEs & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build Outputs
+frontend/dist/
+frontend/build/

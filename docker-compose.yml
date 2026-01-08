@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: dromane-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS:-rootpass}
+      MYSQL_DATABASE: ${DB_NAME:-dromane_db}
+      MYSQL_USER: ${DB_USER:-root}
+      MYSQL_PASSWORD: ${DB_PASS:-}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend-auth/database.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - dromane-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PHP Backend (Auth)
+  php-backend:
+    image: php:8.2-cli
+    container_name: dromane-php-backend
+    working_dir: /app
+    command: php -S 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend-auth:/app
+    environment:
+      DB_HOST: mysql
+      DB_NAME: ${DB_NAME:-dromane_db}
+      DB_USER: ${DB_USER:-root}
+      DB_PASS: ${DB_PASS:-}
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_key_change_me}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - dromane-network
+
+volumes:
+  mysql_data:
+
+
+networks:
+  dromane-network:
+    driver: bridge

@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+:root {
+  --font-inter: 'Inter', sans-serif;
+}
+
+/* Base styles - Dark Mode Default (matches the premium design) */
+body {
+  font-family: var(--font-inter);
+  background-color: #020617;
+  /* slate-950 */
+  color: #f8fafc;
+  /* slate-50 */
+  transition: background-color 0.2s, color 0.2s;
+}
+
+html {
+  background-color: #020617;
+  transition: background-color 0.2s;
+}
+
+/* Light Mode Override */
+html.light body,
+html:not(.dark) body {
+  background-color: #ffffff;
+  color: #0f172a;
+  /* slate-900 */
+}
+
+html.light,
+html:not(.dark) {
+  background-color: #ffffff;
+}
+
+/* Dark Mode (explicit) */
+html.dark body {
+  background-color: #020617;
+  color: #f8fafc;
+}
+
+html.dark {
+  background-color: #020617;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Glassmorphism Classes */
+.glass {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-indigo {
+  background: rgba(79, 70, 229, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(79, 70, 229, 0.1);
+}
+
+/* Prose overrides for Markdown */
+.prose {
+  max-width: none;
+}
+
+.prose p {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose code {
+  color: #818cf8;
+  background: rgba(129, 140, 248, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: 'Fira Code', monospace;
+}
+
+.prose pre {
+  background: #0f172a !important;
+  border: 1px solid #1e293b;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}

@@ -1,0 +1,145 @@
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import Sidebar from '../components/Sidebar';
+import {
+    ShieldCheck,
+    FileText,
+    Code,
+    Search,
+    ArrowRight,
+    Sparkles,
+    Cpu
+} from 'lucide-react';
+
+const tools = [
+    {
+        title: 'Research Assistant',
+        description: 'Ask deep questions about complex topics. Uses our core AI intelligence engine.',
+        icon: <Search className="text-blue-500" />,
+        path: '/dashboard/research',
+        color: 'blue'
+    },
+    {
+        title: 'PDF Reader & Chat',
+        description: 'Upload research papers and chat directly with them using RAG technology.',
+        icon: <FileText className="text-indigo-500" />,
+        path: '/dashboard/pdf',
+        color: 'indigo'
+    },
+    {
+        title: 'Code Analyzer',
+        description: 'Paste code snippets for line-by-line explanation and optimization tips.',
+        icon: <Code className="text-purple-500" />,
+        path: '/dashboard/code',
+        color: 'purple'
+    }
+];
+
+export default function Dashboard() {
+    const navigate = useNavigate();
+    const { user, isLoading } = useAuth();
+
+    // Defensive rendering
+    if (isLoading) {
+        return (
+            <div className="flex bg-gray-50 dark:bg-slate-950 min-h-screen transition-colors">
+                <Sidebar />
+                <main className="flex-1 flex items-center justify-center">
+                    <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                </main>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex bg-gray-50 dark:bg-slate-950 min-h-screen transition-colors">
+            <Sidebar />
+
+            <main className="flex-1 p-8 overflow-y-auto">
+                <div className="space-y-12">
+                    {/* Hero Section */}
+                    <section className="space-y-4">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-500 text-xs font-bold w-fit uppercase tracking-tighter"
+                        >
+                            <Sparkles size={14} />
+                            Welcome back{user?.name ? `, ${user.name}` : ''}
+                        </motion.div>
+
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight transition-colors"
+                        >
+                            What shall we <span className="text-indigo-600 dark:text-indigo-500">solve</span> today?
+                        </motion.h1>
+
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-gray-600 dark:text-slate-400 max-w-2xl text-lg transition-colors"
+                        >
+                            Your unified workspace for research and AI-powered coding. Select a tool below to get started.
+                        </motion.p>
+                    </section>
+
+                    {/* Tools Grid */}
+                    <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {tools.map((tool, idx) => (
+                            <motion.div
+                                key={tool.title}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 + (idx * 0.1) }}
+                                onClick={() => navigate(tool.path)}
+                                className="group cursor-pointer bg-white dark:bg-slate-900/50 backdrop-blur-xl border border-gray-200 dark:border-slate-800 p-8 rounded-3xl hover:border-indigo-300 dark:hover:border-indigo-500/30 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-all shadow-lg dark:shadow-2xl relative overflow-hidden"
+                            >
+                                {/* Hover Accent */}
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-100 dark:bg-indigo-600/5 blur-3xl group-hover:bg-indigo-200 dark:group-hover:bg-indigo-600/10 transition-colors" />
+
+                                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg border border-gray-200 dark:border-slate-700">
+                                    {tool.icon}
+                                </div>
+
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">{tool.title}</h3>
+                                <p className="text-gray-500 dark:text-slate-500 text-sm leading-relaxed mb-6 transition-colors">
+                                    {tool.description}
+                                </p>
+
+                                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm">
+                                    Open Tool <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                </div>
+                            </motion.div>
+                        ))}
+                    </section>
+
+                    {/* Recent Stats / Activity */}
+                    <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white/50 dark:bg-slate-900/30 border border-gray-200 dark:border-slate-800/50 p-6 rounded-3xl transition-colors">
+                            <div className="flex items-center gap-3 mb-4">
+                                <Cpu className="text-gray-400 dark:text-slate-500" size={20} />
+                                <h4 className="text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest transition-colors">System Health</h4>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                <span className="text-xs text-gray-700 dark:text-slate-300 transition-colors">All AI Models Operational</span>
+                            </div>
+                        </div>
+                        <div className="bg-white/50 dark:bg-slate-900/30 border border-gray-200 dark:border-slate-800/50 p-6 rounded-3xl transition-colors">
+                            <div className="flex items-center gap-3 mb-4">
+                                <ShieldCheck className="text-gray-400 dark:text-slate-500" size={20} />
+                                <h4 className="text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest transition-colors">Privacy</h4>
+                            </div>
+                            <span className="text-xs text-gray-700 dark:text-slate-300 transition-colors">End-to-end encryption active for all documents.</span>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    );
+}
