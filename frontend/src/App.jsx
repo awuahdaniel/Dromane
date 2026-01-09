@@ -9,7 +9,11 @@ import { DashboardSkeleton, ChatSkeleton } from './components/Skeleton';
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Chat = lazy(() => import('./pages/Chat'));
+const PDFChat = lazy(() => import('./pages/PDFChat'));
+const CodeAnalyzer = lazy(() => import('./pages/CodeAnalyzer'));
+const ResearchAssistant = lazy(() => import('./pages/ResearchAssistant'));
+const Summarizer = lazy(() => import('./pages/Summarizer'));
+const Humanizer = lazy(() => import('./pages/Humanizer'));
 const Settings = lazy(() => import('./pages/Settings'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 
@@ -90,21 +94,35 @@ function AppRoutes() {
       <Route path="/dashboard/research" element={
         <ProtectedRoute fallback={<ChatSkeleton />}>
           <Suspense fallback={<ChatSkeleton />}>
-            <Chat mode="research" />
+            <ResearchAssistant />
           </Suspense>
         </ProtectedRoute>
       } />
       <Route path="/dashboard/pdf" element={
         <ProtectedRoute fallback={<ChatSkeleton />}>
           <Suspense fallback={<ChatSkeleton />}>
-            <Chat mode="pdf" />
+            <PDFChat />
           </Suspense>
         </ProtectedRoute>
       } />
       <Route path="/dashboard/code" element={
         <ProtectedRoute fallback={<ChatSkeleton />}>
           <Suspense fallback={<ChatSkeleton />}>
-            <Chat mode="code" />
+            <CodeAnalyzer />
+          </Suspense>
+        </ProtectedRoute>
+      } />
+      <Route path="/dashboard/summarizer" element={
+        <ProtectedRoute fallback={<ChatSkeleton />}>
+          <Suspense fallback={<ChatSkeleton />}>
+            <Summarizer />
+          </Suspense>
+        </ProtectedRoute>
+      } />
+      <Route path="/dashboard/humanizer" element={
+        <ProtectedRoute fallback={<ChatSkeleton />}>
+          <Suspense fallback={<ChatSkeleton />}>
+            <Humanizer />
           </Suspense>
         </ProtectedRoute>
       } />

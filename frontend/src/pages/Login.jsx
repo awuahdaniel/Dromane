@@ -40,11 +40,11 @@ export default function Login() {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = 'http://localhost:8000/oauth_google.php';
+        window.location.href = 'http://localhost:8000/auth/google';
     };
 
     const handleGithubLogin = () => {
-        window.location.href = 'http://localhost:8000/oauth_github.php';
+        window.location.href = 'http://localhost:8000/auth/github';
     };
 
     const toggleTheme = () => {

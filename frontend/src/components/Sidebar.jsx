@@ -10,7 +10,9 @@ import {
     LogOut,
     ChevronLeft,
     ChevronRight,
-    User
+    User,
+    AlignLeft,
+    UserCheck
 } from 'lucide-react';
 import { logout } from '../lib/auth';
 import { useAuth } from '../context/AuthContext';
@@ -36,6 +38,8 @@ export default function Sidebar() {
         { title: 'Research', icon: <Search size={20} />, path: '/dashboard/research' },
         { title: 'PDF Chat', icon: <FileText size={20} />, path: '/dashboard/pdf' },
         { title: 'Code Expert', icon: <Code size={20} />, path: '/dashboard/code' },
+        { title: 'Summarizer', icon: <AlignLeft size={20} />, path: '/dashboard/summarizer' },
+        { title: 'Humanizer', icon: <UserCheck size={20} />, path: '/dashboard/humanizer' },
         { title: 'Settings', icon: <Settings size={20} />, path: '/settings' },
     ];
 

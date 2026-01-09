@@ -5,9 +5,9 @@ const ThemeContext = createContext(null);
 export function ThemeProvider({ children }) {
     const [theme, setTheme] = useState(() => {
         if (typeof window !== 'undefined') {
-            return localStorage.getItem('theme') || 'dark'; // Default to dark for premium look
+            return localStorage.getItem('theme') || 'system'; // Default to system to follow OS
         }
-        return 'dark';
+        return 'system';
     });
 
     // Apply theme to DOM whenever theme changes

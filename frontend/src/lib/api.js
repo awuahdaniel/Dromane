@@ -93,6 +93,21 @@ export const sendChatMessage = async (question) => {
     return response.json();
 };
 
+export const performResearch = async (query) => {
+    const response = await fetch(`${AI_API_URL}/api/research`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ query })
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || "Research failed");
+    }
+
+    return response.json();
+};
+
 export const clearDocuments = async () => {
     const response = await fetch(`${AI_API_URL}/clear`, {
         method: "DELETE",
@@ -103,5 +118,41 @@ export const clearDocuments = async () => {
         throw new Error("Failed to clear history");
     }
 
-    return response.json();
+    return await response.json();
 };
+
+export const updateProfile = async (name, email) => {
+    const response = await fetch(`${AUTH_API_URL}/profile/update`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ name, email })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || 'Failed to update profile');
+    }
+
+    // Update local storage if successful
+    if (data.token) localStorage.setItem('token', data.token);
+    if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+
+    return data;
+};
+
+export const changePassword = async (currentPassword, newPassword) => {
+    const response = await fetch(`${AUTH_API_URL}/profile/password`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ currentPassword, newPassword })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || 'Failed to change password');
+    }
+    return data;
+};
+
+// Alias for uploadDocument
+export const uploadPDF = uploadDocument;

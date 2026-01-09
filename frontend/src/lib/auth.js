@@ -1,7 +1,7 @@
 import { AUTH_API_URL } from './config';
 
 export const login = async (email, password) => {
-    const response = await fetch(`${AUTH_API_URL}/login.php`, {
+    const response = await fetch(`${AUTH_API_URL}/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ export const login = async (email, password) => {
 };
 
 export const register = async (name, email, password) => {
-    const response = await fetch(`${AUTH_API_URL}/register.php`, {
+    const response = await fetch(`${AUTH_API_URL}/register`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

@@ -9,7 +9,8 @@ import {
     Search,
     ArrowRight,
     Sparkles,
-    Cpu
+    Cpu,
+    UserCheck
 } from 'lucide-react';
 
 const tools = [
@@ -33,6 +34,20 @@ const tools = [
         icon: <Code className="text-purple-500" />,
         path: '/dashboard/code',
         color: 'purple'
+    },
+    {
+        title: 'Text Summarizer',
+        description: 'Condense long articles and documents into concise key insights.',
+        icon: <FileText className="text-orange-500" />,
+        path: '/dashboard/summarizer',
+        color: 'orange'
+    },
+    {
+        title: 'Text Humanizer',
+        description: 'Refine AI content to sound more natural and engaging.',
+        icon: <UserCheck className="text-teal-500" />,
+        path: '/dashboard/humanizer',
+        color: 'teal'
     }
 ];
 
@@ -116,27 +131,6 @@ export default function Dashboard() {
                                 </div>
                             </motion.div>
                         ))}
-                    </section>
-
-                    {/* Recent Stats / Activity */}
-                    <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white/50 dark:bg-slate-900/30 border border-gray-200 dark:border-slate-800/50 p-6 rounded-3xl transition-colors">
-                            <div className="flex items-center gap-3 mb-4">
-                                <Cpu className="text-gray-400 dark:text-slate-500" size={20} />
-                                <h4 className="text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest transition-colors">System Health</h4>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                <span className="text-xs text-gray-700 dark:text-slate-300 transition-colors">All AI Models Operational</span>
-                            </div>
-                        </div>
-                        <div className="bg-white/50 dark:bg-slate-900/30 border border-gray-200 dark:border-slate-800/50 p-6 rounded-3xl transition-colors">
-                            <div className="flex items-center gap-3 mb-4">
-                                <ShieldCheck className="text-gray-400 dark:text-slate-500" size={20} />
-                                <h4 className="text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest transition-colors">Privacy</h4>
-                            </div>
-                            <span className="text-xs text-gray-700 dark:text-slate-300 transition-colors">End-to-end encryption active for all documents.</span>
-                        </div>
                     </section>
                 </div>
             </main>

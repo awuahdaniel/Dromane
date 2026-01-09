@@ -1,20 +1,25 @@
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import jwt
 import os
-from dotenv import load_dotenv
-from pathlib import Path
 import shutil
+from pathlib import Path
 from pypdf import PdfReader
 import numpy as np
 from openai import OpenAI
 import requests
+import json
+from bs4 import BeautifulSoup
+from newspaper import Article
+from typing import List, Optional
 
-load_dotenv(dotenv_path="../.env")
+# New modular imports
+from config import OPENAI_API_KEY, HUGGINGFACE_API_KEY, JWT_SECRET, SERPER_API_KEY, OLLAMA_URL
+from auth import verify_jwt
+# Import the research app for mounting
+from research import app as research_app
 
-app = FastAPI()
+app = FastAPI(title="Dromane AI Backend")
 
 # CORS configuration
 origins = [
@@ -32,20 +37,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-security = HTTPBearer()
+# Mount the research sub-application
+# This ensures /api/research works on the main server (port 5000)
+app.mount("/sub", research_app)
 
-JWT_SECRET = os.getenv("JWT_SECRET")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY") or "hf_dummy_key"
+# Map the expected main path to the research logic if needed, 
+# but mounting /api directly via research_app's internal routes is also possible.
+# Since research.py defines @app.post("/api/research"), we can just include it.
+from research import perform_research as research_logic
+@app.post("/api/research")
+async def integrated_research(request: BaseModel, user: dict = Depends(verify_jwt)):
+    # Simple wrapper to use existing research logic within main app auth flow
+    # We'll use the logic imported from research.py
+    # Re-importing model for typing
+    from research import ResearchRequest
+    if not isinstance(request, ResearchRequest):
+        # Handle dynamic casting or just call logic
+        pass
+    return await research_logic(request)
+
 PHP_AUTH_URL = "http://localhost:8000"
-
-if not JWT_SECRET:
-    raise RuntimeError("JWT_SECRET is not set in .env")
 
 # Initialize OpenAI client
 client = None
 if OPENAI_API_KEY:
-    client = OpenAI(api_key=OPENAI_API_KEY)
+    try:
+        client = OpenAI(api_key=OPENAI_API_KEY)
+    except Exception as e:
+        print(f"OpenAI Client Init Error: {e}")
 
 # Create uploads directory
 UPLOAD_DIR = Path("uploads")
@@ -55,41 +74,25 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 user_docs = {}
 chat_histories = {}
 
-def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    token = credentials.credentials
-    try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"], audience="dromane.ai")
-        return payload
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {str(e)}",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
 @app.get("/")
 def read_root():
     return {
-        "message": "Dromane AI Backend (Final Version)",
+        "message": "Dromane AI Backend (Secured)",
         "status": "Healthy",
-        "features": {
-            "pdf_upload": True,
-            "chat": True,
-            "summarize": True,
-            "code_explanation": True
-        }
+        "openai_configured": client is not None,
+        "features": ["pdf_upload", "chat", "summarize", "code_explanation", "research"]
     }
 
 @app.post("/upload")
 async def upload_pdf(
     file: UploadFile = File(...),
-    token_payload: dict = Depends(verify_token)
+    user: dict = Depends(verify_jwt)
 ):
     """Upload and process a PDF file using pure OpenAI/PyPDF"""
     if not client:
         raise HTTPException(status_code=500, detail="OpenAI API key not configured")
 
-    user_id = str(token_payload.get("data", {}).get("id"))
+    user_id = str(user.get("id"))
     
     if not file.filename.endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
@@ -106,10 +109,16 @@ async def upload_pdf(
         for page in reader.pages:
             text += page.extract_text()
         
+        if not text.strip():
+             raise ValueError("PDF seems to be empty or unreadable")
+
         # Simple chunking
         chunk_size = 1000
-        chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+        chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size) if text[i:i+chunk_size].strip()]
         
+        if not chunks:
+            raise ValueError("No text content found to process")
+
         # Generate embeddings for chunks
         response = client.embeddings.create(
             input=chunks,
@@ -125,22 +134,13 @@ async def upload_pdf(
             "raw_text": text
         }
 
-        # Persist to PHP backend
-        try:
-            raw_token = jwt.encode(token_payload, JWT_SECRET, algorithm='HS256')
-            requests.post(f"{PHP_AUTH_URL}/documents.php", json={
-                "filename": file.filename,
-                "file_path": str(file_path)
-            }, headers={"Authorization": f"Bearer {raw_token}"}, timeout=2)
-        except Exception as e:
-            print(f"Warning: Failed to persist metadata to PHP: {e}")
-        
         return {
             "message": "PDF uploaded and processed successfully",
             "filename": file.filename,
             "chunks": len(chunks)
         }
     except Exception as e:
+        print(f"Upload error: {e}")
         raise HTTPException(status_code=500, detail=f"PDF processing failed: {str(e)}")
 
 class ChatRequest(BaseModel):
@@ -149,13 +149,13 @@ class ChatRequest(BaseModel):
 @app.post("/chat")
 async def chat(
     request: ChatRequest,
-    token_payload: dict = Depends(verify_token)
+    user: dict = Depends(verify_jwt)
 ):
     """Chat with PDF using RAG or general fallback"""
     if not client:
         raise HTTPException(status_code=500, detail="OpenAI API key not configured")
 
-    user_id = str(token_payload.get("data", {}).get("id"))
+    user_id = str(user.get("id"))
     question = request.question
     
     if user_id not in chat_histories:
@@ -172,6 +172,7 @@ async def chat(
         q_resp = client.embeddings.create(input=[question], model="text-embedding-3-small")
         q_emb = np.array(q_resp.data[0].embedding)
         
+        # Simple cosine similarity
         similarities = np.dot(doc_embeddings, q_emb) / (
             np.linalg.norm(doc_embeddings, axis=1) * np.linalg.norm(q_emb)
         )
@@ -205,46 +206,63 @@ async def chat(
         raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
 
 @app.post("/summarize")
-async def summarize_doc(token_payload: dict = Depends(verify_token)):
+async def summarize_doc(user: dict = Depends(verify_jwt)):
     """Summarize using HF or OpenAI"""
-    user_id = str(token_payload.get("data", {}).get("id"))
+    if not client:
+         raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+
+    user_id = str(user.get("id"))
     if user_id not in user_docs:
         raise HTTPException(status_code=404, detail="No document uploaded")
     
     text = user_docs[user_id]["raw_text"][:4000]
     
-    hf_url = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
-    headers = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
-    
-    try:
-        response = requests.post(hf_url, headers=headers, json={"inputs": text}, timeout=10)
-        result = response.json()
-        if isinstance(result, list) and "summary_text" in result[0]:
-            return {"summary": result[0]["summary_text"]}
-    except:
-        pass
+    # Try Hugging Face if key exists
+    if HUGGINGFACE_API_KEY and HUGGINGFACE_API_KEY != "hf_dummy_key":
+        hf_url = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
+        headers = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
+        try:
+            response = requests.post(hf_url, headers=headers, json={"inputs": text}, timeout=10)
+            result = response.json()
+            if isinstance(result, list) and "summary_text" in result[0]:
+                return {"summary": result[0]["summary_text"]}
+        except Exception as e:
+            print(f"HF Summarization skipped: {e}")
 
+    # Fallback to OpenAI
     resp = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[{"role": "system", "content": "Summarize accurately"}, {"role": "user", "content": text}]
+        messages=[{"role": "system", "content": "Summarize the following document accurately and concisely."}, {"role": "user", "content": text}]
     )
     return {"summary": resp.choices[0].message.content}
 
 @app.post("/explain-code")
-async def explain_code(request: ChatRequest, token_payload: dict = Depends(verify_token)):
+async def explain_code(request: ChatRequest, user: dict = Depends(verify_jwt)):
     """Code explanation mode"""
+    if not client:
+        raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a code expert. Explain step-by-step."},
+            {"role": "system", "content": "You are a senior software engineer. Explain the following code block step-by-step, highlighting key logic and potential improvements."},
             {"role": "user", "content": request.question}
         ]
     )
     return {"answer": response.choices[0].message.content}
 
 @app.delete("/clear")
-async def clear_documents(token_payload: dict = Depends(verify_token)):
-    user_id = str(token_payload.get("data", {}).get("id"))
-    if user_id in user_docs: del user_docs[user_id]
-    if user_id in chat_histories: del chat_histories[user_id]
-    return {"message": "Cleared"}
+async def clear_documents(user: dict = Depends(verify_jwt)):
+    user_id = str(user.get("id"))
+    count = 0
+    if user_id in user_docs: 
+        del user_docs[user_id]
+        count += 1
+    if user_id in chat_histories: 
+        del chat_histories[user_id]
+        count += 1
+    return {"message": "State cleared", "items_removed": count}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5000)
