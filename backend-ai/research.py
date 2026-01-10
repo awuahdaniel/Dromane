@@ -261,7 +261,7 @@ class ResearchRequest(BaseModel):
 
 # ---------------- ROUTE ----------------
 @app.post("/api/research")
-def research(req: ResearchRequest):
+async def perform_research(req: ResearchRequest):
     query = req.query
 
     # 1️⃣ Google Search (Serper)
@@ -322,7 +322,7 @@ def research(req: ResearchRequest):
     # 3️⃣ Ask Groq (LLaMA-3.1-8B-Instruct)
     try:
         completion = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instruct",
+            model="llama-3.1-8b-instant",
             messages=[
                 {
                     "role": "system",
@@ -340,6 +340,7 @@ def research(req: ResearchRequest):
         answer = completion.choices[0].message.content
 
     except Exception as e:
+        print(f"Groq API Error: {e}")
         answer = f"I analyzed {len(sources)} sources, but the AI service failed. Review the sources below."
 
     # 4️⃣ Response

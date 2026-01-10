@@ -17,12 +17,21 @@ from dotenv import load_dotenv
 from pathlib import Path
 from research import app as research_app, perform_research as research_logic, ResearchRequest
 # New modular imports
-from config import OPENAI_API_KEY, HUGGINGFACE_API_KEY, JWT_SECRET, SERPER_API_KEY, OLLAMA_URL
+from config import OPENAI_API_KEY, GROQ_API_KEY, JWT_SECRET, SERPER_API_KEY, OLLAMA_URL
 from auth import verify_jwt
 # Import research components at top level
 from research import app as research_app, perform_research as research_logic, ResearchRequest
+from groq import Groq
 
 app = FastAPI(title="Dromane AI Backend")
+
+# Initialize Groq client
+groq_client = None
+if GROQ_API_KEY:
+    try:
+        groq_client = Groq(api_key=GROQ_API_KEY)
+    except Exception as e:
+        print(f"Groq Client Init Error: {e}")
 
 # CORS configuration
 origins = [
@@ -200,9 +209,9 @@ async def chat(
 
 @app.post("/summarize")
 async def summarize_doc(user: dict = Depends(verify_jwt)):
-    """Summarize using HF or OpenAI"""
-    if not client:
-         raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+    """Summarize using Groq"""
+    if not groq_client:
+        raise HTTPException(status_code=500, detail="Groq API key not configured")
 
     user_id = str(user.get("id"))
     if user_id not in user_docs:
@@ -210,24 +219,19 @@ async def summarize_doc(user: dict = Depends(verify_jwt)):
     
     text = user_docs[user_id]["raw_text"][:4000]
     
-    # Try Hugging Face if key exists
-    if HUGGINGFACE_API_KEY and HUGGINGFACE_API_KEY != "hf_dummy_key":
-        hf_url = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
-        headers = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
-        try:
-            response = requests.post(hf_url, headers=headers, json={"inputs": text}, timeout=10)
-            result = response.json()
-            if isinstance(result, list) and "summary_text" in result[0]:
-                return {"summary": result[0]["summary_text"]}
-        except Exception as e:
-            print(f"HF Summarization skipped: {e}")
-
-    # Fallback to OpenAI
-    resp = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "system", "content": "Summarize the following document accurately and concisely."}, {"role": "user", "content": text}]
-    )
-    return {"summary": resp.choices[0].message.content}
+    try:
+        completion = groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {"role": "system", "content": "Summarize the following document accurately and concisely."},
+                {"role": "user", "content": text}
+            ],
+            temperature=0.3,
+            max_tokens=500
+        )
+        return {"summary": completion.choices[0].message.content}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Summarization failed: {str(e)}")
 
 @app.post("/explain-code")
 async def explain_code(request: ChatRequest, user: dict = Depends(verify_jwt)):

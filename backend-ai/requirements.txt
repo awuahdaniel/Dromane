@@ -3,12 +3,6 @@ uvicorn
 python-dotenv
 python-jose[cryptography]
 pypdf
-faiss-cpu
-langchain==0.1.20
-langchain-community==0.0.38
-langchain-core==0.1.52
-langchain-text-splitters==0.0.1
-langchain-openai==0.1.6
 python-multipart
 requests
 numpy
@@ -16,5 +10,5 @@ newspaper3k
 beautifulsoup4
 lxml_html_clean
 httpx
-transformers
-torch
+groq
+openai
