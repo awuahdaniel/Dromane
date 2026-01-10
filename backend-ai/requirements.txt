@@ -15,3 +15,6 @@ numpy
 newspaper3k
 beautifulsoup4
 lxml_html_clean
+httpx
+transformers
+torch

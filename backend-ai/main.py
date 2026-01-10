@@ -12,12 +12,15 @@ import json
 from bs4 import BeautifulSoup
 from newspaper import Article
 from typing import List, Optional
-
+from httpx import AsyncClient
+from dotenv import load_dotenv
+from pathlib import Path
+from research import app as research_app, perform_research as research_logic, ResearchRequest
 # New modular imports
 from config import OPENAI_API_KEY, HUGGINGFACE_API_KEY, JWT_SECRET, SERPER_API_KEY, OLLAMA_URL
 from auth import verify_jwt
-# Import the research app for mounting
-from research import app as research_app
+# Import research components at top level
+from research import app as research_app, perform_research as research_logic, ResearchRequest
 
 app = FastAPI(title="Dromane AI Backend")
 
@@ -41,19 +44,9 @@ app.add_middleware(
 # This ensures /api/research works on the main server (port 5000)
 app.mount("/sub", research_app)
 
-# Map the expected main path to the research logic if needed, 
-# but mounting /api directly via research_app's internal routes is also possible.
-# Since research.py defines @app.post("/api/research"), we can just include it.
-from research import perform_research as research_logic
 @app.post("/api/research")
-async def integrated_research(request: BaseModel, user: dict = Depends(verify_jwt)):
-    # Simple wrapper to use existing research logic within main app auth flow
-    # We'll use the logic imported from research.py
-    # Re-importing model for typing
-    from research import ResearchRequest
-    if not isinstance(request, ResearchRequest):
-        # Handle dynamic casting or just call logic
-        pass
+async def integrated_research(request: ResearchRequest, user: dict = Depends(verify_jwt)):
+    """Integrated research endpoint that uses main app authentication"""
     return await research_logic(request)
 
 PHP_AUTH_URL = "http://localhost:8000"
