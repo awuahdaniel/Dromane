@@ -12,7 +12,7 @@ import json
 from bs4 import BeautifulSoup
 from newspaper import Article
 from typing import List, Optional
-from httpx import AsyncClient
+
 from dotenv import load_dotenv
 from pathlib import Path
 from research import app as research_app, perform_research as research_logic, ResearchRequest
@@ -84,6 +84,13 @@ def read_root():
         "openai_configured": client is not None,
         "features": ["pdf_upload", "chat", "summarize", "code_explanation", "research"]
     }
+
+@app.get("/health/ai")
+def ai_health_check():
+    """Quick check if Groq is configured"""
+    if not groq_client:
+        raise HTTPException(status_code=503, detail="Groq not configured")
+    return {"status": "ok", "provider": "groq", "model": "llama-3.1-8b-instant"}
 
 @app.post("/upload")
 async def upload_pdf(
@@ -219,6 +226,7 @@ async def summarize_doc(user: dict = Depends(verify_jwt)):
     
     text = user_docs[user_id]["raw_text"][:4000]
     
+    print("Calling Groq llama-3.1-8b-instant (Summarization)...")
     try:
         completion = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
@@ -231,7 +239,8 @@ async def summarize_doc(user: dict = Depends(verify_jwt)):
         )
         return {"summary": completion.choices[0].message.content}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Summarization failed: {str(e)}")
+        print(f"Groq API Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Groq inference failed: {str(e)}")
 
 @app.post("/explain-code")
 async def explain_code(request: ChatRequest, user: dict = Depends(verify_jwt)):
