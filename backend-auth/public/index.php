@@ -7,6 +7,7 @@ require __DIR__ . '/../src/jwt.php';
 require __DIR__ . '/../src/google.php';
 require __DIR__ . '/../src/github.php';
 require __DIR__ . '/../src/auth.php';
+require __DIR__ . '/../src/documents.php';
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
@@ -17,6 +18,10 @@ switch ($path) {
 
     case '/register':
         registerUser();
+        break;
+
+    case '/documents':
+        handleDocuments();
         break;
 
     case '/auth/google':

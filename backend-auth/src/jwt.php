@@ -3,7 +3,7 @@ use Firebase\JWT\JWT;
 
 function createJWT($userId, $email) {
     $payload = [
-        'sub' => $userId,
+        'sub' => (string) $userId,  // Convert to string for Python compatibility
         'email' => $email,
         'iat' => time(),
         'exp' => time() + (int) env('JWT_EXPIRY')

@@ -11,3 +11,6 @@ beautifulsoup4
 lxml_html_clean
 groq
 openai
+mysql-connector-python
+passlib[bcrypt]
+pydantic[email]

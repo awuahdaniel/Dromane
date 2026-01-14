@@ -12,14 +12,11 @@ import json
 from bs4 import BeautifulSoup
 from newspaper import Article
 from typing import List, Optional
-
 from dotenv import load_dotenv
-from pathlib import Path
-from research import app as research_app, perform_research as research_logic, ResearchRequest
-# New modular imports
+
+# Modular imports
 from config import OPENAI_API_KEY, GROQ_API_KEY, JWT_SECRET, SERPER_API_KEY, OLLAMA_URL
-from auth import verify_jwt
-# Import research components at top level
+from auth import verify_jwt, authenticate_user, create_access_token, register_user, UserLogin, UserRegister, Token, pwd_context
 from research import app as research_app, perform_research as research_logic, ResearchRequest
 from groq import Groq
 
@@ -39,6 +36,8 @@ origins = [
     "http://127.0.0.1:5173",
     "http://localhost:5174",
     "http://127.0.0.1:5174",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
 ]
 
 app.add_middleware(
@@ -49,8 +48,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Authentication Routes
+@app.post("/login", response_model=dict)
+@app.post("/api/auth/login", response_model=dict)
+async def login_for_access_token(form_data: UserLogin):
+    user = authenticate_user(form_data.email, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = create_access_token(
+        data={"sub": str(user['id']), "data": {"id": user['id'], "name": user['name'], "email": user['email']}}
+    )
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer", 
+        "token": access_token, 
+        "user": user,
+        "success": True 
+    }
+
+@app.post("/register")
+async def register(user_data: UserRegister):
+    return register_user(user_data)
+
 # Mount the research sub-application
-# This ensures /api/research works on the main server (port 5000)
+# This ensures /api/research works on the main server (port 8000)
 app.mount("/sub", research_app)
 
 @app.post("/api/research")
@@ -160,9 +185,13 @@ async def chat(
     request: ChatRequest,
     user: dict = Depends(verify_jwt)
 ):
-    """Chat with PDF using RAG or general fallback"""
+    """Chat with PDF using RAG (uses Groq for generation)"""
     if not client:
-        raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+         # Still need OpenAI for embeddings
+        raise HTTPException(status_code=500, detail="OpenAI API key not configured (required for embeddings)")
+        
+    if not groq_client:
+        raise HTTPException(status_code=500, detail="Groq API key not configured")
 
     user_id = str(user.get("id"))
     question = request.question
@@ -178,6 +207,7 @@ async def chat(
         chunks = doc_data["chunks"]
         doc_embeddings = np.array(doc_data["embeddings"])
         
+        # Use OpenAI for embeddings (Groq doesn't support embeddings yet)
         q_resp = client.embeddings.create(input=[question], model="text-embedding-3-small")
         q_emb = np.array(q_resp.data[0].embedding)
         
@@ -201,8 +231,9 @@ async def chat(
     messages.append({"role": "user", "content": question})
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        # Use Groq (LLaMA) for generation
+        response = groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant",
             messages=messages,
             temperature=0.7
         )
@@ -244,18 +275,39 @@ async def summarize_doc(user: dict = Depends(verify_jwt)):
 
 @app.post("/explain-code")
 async def explain_code(request: ChatRequest, user: dict = Depends(verify_jwt)):
-    """Code explanation mode"""
-    if not client:
-        raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+    """Code explanation mode (Uses Groq LLaMA)"""
+    if not groq_client:
+        raise HTTPException(status_code=500, detail="Groq API key not configured")
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are a senior software engineer. Explain the following code block step-by-step, highlighting key logic and potential improvements."},
-            {"role": "user", "content": request.question}
-        ]
-    )
-    return {"answer": response.choices[0].message.content}
+    try:
+        response = groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {"role": "system", "content": "You are a senior software engineer. Explain the following code block step-by-step, highlighting key logic and potential improvements."},
+                {"role": "user", "content": request.question}
+            ]
+        )
+        return {"answer": response.choices[0].message.content}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Code explanation failed: {str(e)}")
+
+@app.post("/humanize")
+async def humanize_text(request: ChatRequest, user: dict = Depends(verify_jwt)):
+    """Humanize text mode (Uses Groq LLaMA)"""
+    if not groq_client:
+        raise HTTPException(status_code=500, detail="Groq API key not configured")
+
+    try:
+        response = groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {"role": "system", "content": "You are a professional editor. Rewrite the following text to make it sound more natural, human-like, and engaging, while getting rid of any robotic or AI-generated feel. Do not change the core meaning."},
+                {"role": "user", "content": request.question}
+            ]
+        )
+        return {"answer": response.choices[0].message.content}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Humanize failed: {str(e)}")
 
 @app.delete("/clear")
 async def clear_documents(user: dict = Depends(verify_jwt)):
@@ -271,4 +323,5 @@ async def clear_documents(user: dict = Depends(verify_jwt)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    # Run on port 8001 to avoid conflict with PHP auth server on port 8000
+    uvicorn.run(app, host="0.0.0.0", port=8001)

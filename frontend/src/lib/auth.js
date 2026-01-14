@@ -1,22 +1,30 @@
 import { AUTH_API_URL } from './config';
 
 export const login = async (email, password) => {
-    const response = await fetch(`${AUTH_API_URL}/login`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-    });
+    try {
+        const response = await fetch(`${AUTH_API_URL}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+        });
 
-    const data = await response.json();
-    if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-    } else {
-        throw new Error(data.error || 'Login failed');
+        const data = await response.json();
+        if (response.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+        } else {
+            throw new Error(data.error || 'Login failed');
+        }
+        return data;
+    } catch (error) {
+        // Handle network errors separately
+        if (error.message === 'Failed to fetch') {
+            throw new Error('Cannot connect to server. Make sure the PHP backend is running on port 8000.');
+        }
+        throw error;
     }
-    return data;
 };
 
 export const register = async (name, email, password) => {

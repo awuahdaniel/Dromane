@@ -28,6 +28,16 @@ export const explainCode = async (code) => {
     return response.json();
 };
 
+export const humanizeText = async (text) => {
+    const response = await fetch(`${AI_API_URL}/humanize`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ question: text }),
+    });
+    if (!response.ok) throw new Error('Humanizing text failed');
+    return response.json();
+};
+
 export const getDocuments = async () => {
     const response = await fetch(`${AUTH_API_URL}/documents.php`, {
         method: 'GET',
