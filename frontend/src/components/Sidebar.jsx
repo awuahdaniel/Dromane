@@ -17,8 +17,9 @@ import {
 import { logout } from '../lib/auth';
 import { useAuth } from '../context/AuthContext';
 import { getDocuments } from '../lib/api';
+import logo from '../assets/logo.png';
 
-export default function Sidebar() {
+export default function Sidebar({ children }) {
     const [isOpen, setIsOpen] = useState(true);
     const [documents, setDocuments] = useState([]);
     const navigate = useNavigate();
@@ -53,28 +54,28 @@ export default function Sidebar() {
         <motion.div
             initial={false}
             animate={{ width: isOpen ? 280 : 80 }}
-            className="h-screen bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-slate-300 flex flex-col border-r border-gray-200 dark:border-slate-800 transition-all duration-300 ease-in-out relative group shrink-0"
+            className="h-screen bg-[#F8F9F8] dark:bg-[#191919] text-[#191919] dark:text-[#E6E8E6] flex flex-col border-r border-[#E6E8E6] dark:border-[#252525] transition-all duration-300 ease-in-out relative group shrink-0"
         >
             {/* Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="absolute -right-3 top-10 bg-indigo-600 rounded-full p-1 text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50"
+                className="absolute -right-3 top-10 bg-[#F15025] rounded-full p-1 text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50"
             >
                 {isOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
             </button>
 
             {/* Brand */}
             <div className="p-6 flex items-center gap-3 cursor-pointer" onClick={() => navigate('/dashboard')}>
-                <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
-                    <span className="text-white font-bold text-xl">D</span>
+                <div className="w-10 h-10 flex items-center justify-center shrink-0">
+                    <img src={logo} alt="Dromane.ai" className="w-full h-full object-contain" />
                 </div>
                 {isOpen && (
                     <motion.h1
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="font-bold text-xl text-gray-900 dark:text-white tracking-tight"
+                        className="font-bold text-xl text-[#191919] dark:text-white tracking-tight"
                     >
-                        Dromane<span className="text-indigo-500">.ai</span>
+                        Dromane<span className="text-[#F15025]">.ai</span>
                     </motion.h1>
                 )}
             </div>
@@ -90,11 +91,11 @@ export default function Sidebar() {
                                 key={item.path}
                                 onClick={() => navigate(item.path)}
                                 className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${location.pathname === item.path
-                                    ? 'bg-indigo-100 dark:bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-200 dark:border-indigo-500/20'
-                                    : 'hover:bg-gray-100 dark:hover:bg-slate-800/50 hover:text-gray-900 dark:hover:text-slate-200 border border-transparent'
+                                    ? 'bg-[#F15025]/10 text-[#F15025] shadow-sm border border-[#F15025]/20'
+                                    : 'hover:bg-[#E6E8E6] dark:hover:bg-[#252525] hover:text-[#191919] dark:hover:text-white border border-transparent'
                                     }`}
                             >
-                                <div className={location.pathname === item.path ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-slate-500'}>
+                                <div className={location.pathname === item.path ? 'text-[#F15025]' : 'text-[#CED0CE]'}>
                                     {item.icon}
                                 </div>
                                 {isOpen && <span className="text-sm font-medium">{item.title}</span>}
@@ -108,7 +109,7 @@ export default function Sidebar() {
                     <section>
                         {isOpen && <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4 px-2">Library</p>}
                         <div className="space-y-1">
-                            {documents.slice(0, 5).map((doc) => (
+                            {Array.isArray(documents) && documents.slice(0, 5).map((doc) => (
                                 <button
                                     key={doc.id}
                                     onClick={() => navigate(`/dashboard/pdf?id=${doc.id}`)}
@@ -121,12 +122,15 @@ export default function Sidebar() {
                         </div>
                     </section>
                 )}
+
+                {/* Additional Sidebar Content (Children) */}
+                {children}
             </div>
 
             {/* User Footer */}
-            <div className="p-4 border-t border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50">
-                <div className={`flex items-center gap-3 p-2 rounded-xl transition-all ${isOpen ? 'hover:bg-gray-100 dark:hover:bg-slate-800' : 'justify-center'}`}>
-                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-800 flex items-center justify-center text-gray-500 dark:text-slate-500 border border-gray-300 dark:border-slate-700 shrink-0 shadow-sm">
+            <div className="p-4 border-t border-[#E6E8E6] dark:border-[#252525] bg-[#F8F9F8]/50 dark:bg-[#191919]/50">
+                <div className={`flex items-center gap-3 p-2 rounded-xl transition-all ${isOpen ? 'hover:bg-[#E6E8E6] dark:hover:bg-[#252525]' : 'justify-center'}`}>
+                    <div className="w-8 h-8 rounded-full bg-[#E6E8E6] dark:bg-[#252525] flex items-center justify-center text-[#CED0CE] dark:text-[#E6E8E6] border border-[#CED0CE] dark:border-[#252525] shrink-0 shadow-sm">
                         <User size={16} />
                     </div>
                     {isOpen && (

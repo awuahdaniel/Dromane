@@ -120,7 +120,7 @@ export default function ChatWindow({ messages, onSendMessage, onSummarize, onExp
                                         ? 'bg-indigo-600 text-white'
                                         : 'bg-gray-100 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-800/50 text-gray-800 dark:text-slate-300'
                                         }`}>
-                                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                        <ReactMarkdown>{String(msg.content || '')}</ReactMarkdown>
                                     </div>
                                     {msg.role === 'assistant' && (
                                         <button

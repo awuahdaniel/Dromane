@@ -93,6 +93,21 @@ if OPENAI_API_KEY:
     except Exception as e:
         print(f"OpenAI Client Init Error: {e}")
 
+# Initialize SentenceTransformer for local embeddings
+from sentence_transformers import SentenceTransformer
+import numpy as np
+
+embed_model = None
+try:
+    print("Loading embedding model (all-MiniLM-L6-v2)...")
+    # Load fully on CPU to avoid CUDA/GPU weirdness on some machines
+    embed_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+    print("Embedding model loaded successfully.")
+except Exception as e:
+    print(f"Warning: Failed to load embedding model: {e}")
+    print("Running in Text-Only mode (PDF Context will be unavailable)")
+    embed_model = None
+
 # Create uploads directory
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -106,7 +121,7 @@ def read_root():
     return {
         "message": "Dromane AI Backend (Secured)",
         "status": "Healthy",
-        "openai_configured": client is not None,
+        "embeddings_configured": embed_model is not None,
         "features": ["pdf_upload", "chat", "summarize", "code_explanation", "research"]
     }
 
@@ -115,16 +130,25 @@ def ai_health_check():
     """Quick check if Groq is configured"""
     if not groq_client:
         raise HTTPException(status_code=503, detail="Groq not configured")
-    return {"status": "ok", "provider": "groq", "model": "llama-3.1-8b-instant"}
+    # Don't error if embeddings are missing, just report it
+    return {
+        "status": "ok", 
+        "provider": "groq", 
+        "model": "llama-3.1-8b-instant", 
+        "embeddings": "local" if embed_model else "disabled"
+    }
 
 @app.post("/upload")
 async def upload_pdf(
     file: UploadFile = File(...),
     user: dict = Depends(verify_jwt)
 ):
-    """Upload and process a PDF file using pure OpenAI/PyPDF"""
-    if not client:
-        raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+    """Upload and process a PDF file using local embeddings"""
+    if not embed_model:
+        # Allow upload but warn that search won't work? 
+        # Or better: Fail gracefully here if purely for RAG.
+        # Let's allow upload for "Summarize" (which doesn't use embeddings) but warn for Chat.
+        pass
 
     user_id = str(user.get("id"))
     
@@ -153,13 +177,13 @@ async def upload_pdf(
         if not chunks:
             raise ValueError("No text content found to process")
 
-        # Generate embeddings for chunks
-        response = client.embeddings.create(
-            input=chunks,
-            model="text-embedding-3-small"
-        )
-        
-        embeddings = [data.embedding for data in response.data]
+        # Generate embeddings if model is available
+        embeddings = []
+        if embed_model:
+            print(f"Generating embeddings for {len(chunks)} chunks...")
+            embeddings = embed_model.encode(chunks)
+        else:
+            print("Skipping embeddings (Model not loaded)")
         
         # Store for user
         user_docs[user_id] = {
@@ -168,8 +192,12 @@ async def upload_pdf(
             "raw_text": text
         }
 
+        msg = "PDF uploaded successfully"
+        if not embed_model:
+            msg += " (Search disabled: Embedding model missing)"
+
         return {
-            "message": "PDF uploaded and processed successfully",
+            "message": msg,
             "filename": file.filename,
             "chunks": len(chunks)
         }
@@ -185,10 +213,8 @@ async def chat(
     request: ChatRequest,
     user: dict = Depends(verify_jwt)
 ):
-    """Chat with PDF using RAG (uses Groq for generation)"""
-    if not client:
-         # Still need OpenAI for embeddings
-        raise HTTPException(status_code=500, detail="OpenAI API key not configured (required for embeddings)")
+    """Chat with PDF using RAG (uses Groq for generation, Local for embeddings)"""
+    # NO CHECK for embed_model here. Fallback allows General Chat.
         
     if not groq_client:
         raise HTTPException(status_code=500, detail="Groq API key not configured")
@@ -202,29 +228,47 @@ async def chat(
     context = ""
     sources = 0
 
-    if user_id in user_docs:
+    # Only try RAG if we have a doc AND an embedding model
+    if user_id in user_docs and embed_model:
         doc_data = user_docs[user_id]
         chunks = doc_data["chunks"]
-        doc_embeddings = np.array(doc_data["embeddings"])
+        doc_embeddings = doc_data["embeddings"] # Already numpy array
         
-        # Use OpenAI for embeddings (Groq doesn't support embeddings yet)
-        q_resp = client.embeddings.create(input=[question], model="text-embedding-3-small")
-        q_emb = np.array(q_resp.data[0].embedding)
+        print(f"RAG Request: user_id={user_id}, document={user_id in user_docs}, model={embed_model is not None}")
         
-        # Simple cosine similarity
-        similarities = np.dot(doc_embeddings, q_emb) / (
-            np.linalg.norm(doc_embeddings, axis=1) * np.linalg.norm(q_emb)
-        )
-        
-        top_indices = np.argsort(similarities)[-3:][::-1]
-        relevant_chunks = [chunks[i] for i in top_indices if similarities[i] > 0.3]
-        
-        context = "\n\n".join(relevant_chunks)
-        sources = len(relevant_chunks)
+        if len(doc_embeddings) > 0:
+            # Use local model for question embedding
+            q_emb = embed_model.encode([question])[0]
+            
+            # Simple cosine similarity
+            similarities = np.dot(doc_embeddings, q_emb) / (
+                np.linalg.norm(doc_embeddings, axis=1) * np.linalg.norm(q_emb)
+            )
+            
+            top_indices = np.argsort(similarities)[-3:][::-1]
+            # Lower threshold to 0.1 to be more inclusive for broad questions
+            relevant_chunks = [chunks[i] for i in top_indices if similarities[i] > 0.1]
+            
+            # Ensure at least the very TOP chunk is included if no chunk meets threshold
+            if not relevant_chunks and len(chunks) > 0:
+                relevant_chunks = [chunks[top_indices[0]]]
+                print(f"No chunks > 0.1, using top chunk (score: {similarities[top_indices[0]]:.4f})")
+            else:
+                print(f"Found {len(relevant_chunks)} relevant chunks. Top score: {similarities[top_indices[0]]:.4f}")
 
-    system_msg = "You are a helpful assistant for Dromane.ai."
+            context = "\n\n".join(relevant_chunks)
+            sources = len(relevant_chunks)
+        else:
+            print("No embeddings found for this user's document.")
+
+    system_msg = "You are a highly capable AI research assistant for Dromane.ai."
     if context:
-        system_msg += f"\nUse the following context from the user's uploaded PDF to answer the question:\n{context}"
+        system_msg += f"\n\nCRITICAL: Use the following information extracted from the user's uploaded PDF to answer the question. If the answer is in the context, use it. If not, inform the user you are using general knowledge.\n\nDOCUMENT CONTEXT:\n{context}"
+    elif user_id in user_docs:
+        if not embed_model:
+            system_msg += "\n\nNote: A PDF is uploaded, but the similarity search model failed to load. Please acknowledge this and answer based on general knowledge if you can't see the document."
+        else:
+            system_msg += "\n\nNote: A PDF is uploaded, but no highly relevant sections were found for this specific query. Answer generally but keep the document presence in mind."
     
     messages = [{"role": "system", "content": system_msg}]
     messages.extend(chat_histories[user_id][-5:])
@@ -243,30 +287,38 @@ async def chat(
         
         return {"answer": answer, "sources": sources}
     except Exception as e:
+        print(f"Chat API error: {e}")
         raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
 
+class SummarizeRequest(BaseModel):
+    text: Optional[str] = None
+
 @app.post("/summarize")
-async def summarize_doc(user: dict = Depends(verify_jwt)):
-    """Summarize using Groq"""
+async def summarize_doc(request: SummarizeRequest = None, user: dict = Depends(verify_jwt)):
+    """Summarize using Groq (Supports both uploaded doc and direct text)"""
     if not groq_client:
         raise HTTPException(status_code=500, detail="Groq API key not configured")
 
     user_id = str(user.get("id"))
-    if user_id not in user_docs:
-        raise HTTPException(status_code=404, detail="No document uploaded")
-    
-    text = user_docs[user_id]["raw_text"][:4000]
+    text_to_summarize = ""
+
+    if request and request.text:
+        text_to_summarize = request.text
+    elif user_id in user_docs:
+        text_to_summarize = user_docs[user_id]["raw_text"][:10000] # Increased limit for stronger model
+    else:
+        raise HTTPException(status_code=400, detail="No text provided and no document uploaded")
     
     print("Calling Groq llama-3.1-8b-instant (Summarization)...")
     try:
         completion = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[
-                {"role": "system", "content": "Summarize the following document accurately and concisely."},
-                {"role": "user", "content": text}
+                {"role": "system", "content": "Summarize the following text accurately and concisely. Capture the main points and key details."},
+                {"role": "user", "content": text_to_summarize}
             ],
             temperature=0.3,
-            max_tokens=500
+            max_tokens=1000
         )
         return {"summary": completion.choices[0].message.content}
     except Exception as e:

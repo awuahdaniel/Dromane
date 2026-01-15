@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
-import { sendChatMessage } from '../lib/api';
+import { humanizeText } from '../lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserCheck, Wand2, Copy, Check, Repeat } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -28,9 +28,7 @@ export default function Humanizer() {
         setHumanizedText('');
 
         try {
-            // We'll use the chat endpoint prompting it to humanize
-            const prompt = `Rewrite the following text to sound more natural, human-like, and engaging. Improve flow and readability while maintaining the original meaning:\n\n${inputText}`;
-            const response = await sendChatMessage(prompt);
+            const response = await humanizeText(inputText);
             setHumanizedText(response.answer || response.message);
         } catch (error) {
             setHumanizedText(`**Error**: ${error.message}`);
@@ -197,7 +195,7 @@ export default function Humanizer() {
                                                 exit={{ opacity: 0, y: -10 }}
                                                 className="prose prose-sm dark:prose-invert max-w-none"
                                             >
-                                                <ReactMarkdown>{humanizedText}</ReactMarkdown>
+                                                <ReactMarkdown>{String(humanizedText || '')}</ReactMarkdown>
                                             </motion.div>
                                         ) : (
                                             <motion.div

@@ -20,9 +20,9 @@ export default function Upload({ onUploadSuccess }) {
         setError('');
 
         try {
-            await uploadDocument(file);
+            const result = await uploadDocument(file);
             setFile(null);
-            if (onUploadSuccess) onUploadSuccess();
+            if (onUploadSuccess) onUploadSuccess(result);
         } catch (err) {
             setError(err.message);
         } finally {

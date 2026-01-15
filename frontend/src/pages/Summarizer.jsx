@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
-import { sendChatMessage } from '../lib/api';
+import { summarizeText } from '../lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, AlignLeft, ArrowRight, Copy, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -28,10 +28,8 @@ export default function Summarizer() {
         setSummary('');
 
         try {
-            // We'll use the chat endpoint for now, prompting it to summarize
-            const prompt = `Please provide a concise and comprehensive summary of the following text:\n\n${inputText}`;
-            const response = await sendChatMessage(prompt);
-            setSummary(response.answer || response.message);
+            const response = await summarizeText(inputText);
+            setSummary(response.summary || response.answer || response.message);
         } catch (error) {
             setSummary(`**Error**: ${error.message}`);
         } finally {
@@ -186,7 +184,7 @@ export default function Summarizer() {
                                                 exit={{ opacity: 0, y: -10 }}
                                                 className="prose prose-sm dark:prose-invert max-w-none"
                                             >
-                                                <ReactMarkdown>{summary}</ReactMarkdown>
+                                                <ReactMarkdown>{String(summary || '')}</ReactMarkdown>
                                             </motion.div>
                                         ) : (
                                             <motion.div

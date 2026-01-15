@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Github, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import logo from '../assets/logo.png';
 
 export default function Register() {
     const [name, setName] = useState('');
@@ -43,8 +44,8 @@ export default function Register() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden transition-colors">
             {/* Background Decor */}
-            <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 dark:bg-purple-600/10 blur-[120px] rounded-full" />
-            <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-indigo-500/10 dark:bg-indigo-600/10 blur-[120px] rounded-full" />
+            <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-red-500/10 dark:bg-red-600/10 blur-[120px] rounded-full" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-orange-500/10 dark:bg-orange-600/10 blur-[120px] rounded-full" />
 
             <button
                 onClick={toggleTheme}
@@ -59,8 +60,8 @@ export default function Register() {
                 className="w-full max-w-md bg-white/70 dark:bg-slate-900/50 backdrop-blur-xl border border-gray-200 dark:border-slate-800 p-8 rounded-3xl shadow-xl dark:shadow-2xl relative z-10 transition-colors"
             >
                 <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/20">
-                        <span className="text-white font-bold text-3xl">D</span>
+                    <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                        <img src={logo} alt="Dromane.ai" className="w-full h-full object-contain drop-shadow-2xl" />
                     </div>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-tight transition-colors">Create Account</h1>
                     <p className="text-gray-500 dark:text-slate-500 text-sm mt-2 transition-colors">Join the Dromane research community</p>
@@ -114,7 +115,7 @@ export default function Register() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 group disabled:opacity-50"
+                        className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 group disabled:opacity-50"
                     >
                         {loading ? 'Creating account...' : (
                             <>
@@ -154,7 +155,7 @@ export default function Register() {
                 </div>
 
                 <p className="mt-8 text-center text-gray-500 dark:text-slate-500 text-sm font-medium transition-colors">
-                    Already have an account? <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors">Sign in</Link>
+                    Already have an account? <Link to="/login" className="text-orange-600 dark:text-orange-400 hover:text-orange-500 dark:hover:text-orange-300 transition-colors">Sign in</Link>
                 </p>
             </motion.div>
         </div>

@@ -12,21 +12,21 @@ from bs4 import BeautifulSoup
 from typing import List
 from groq import Groq
 
-# ---------------- ENV ----------------
-env_path = Path(__file__).parent / ".env"
-load_dotenv(env_path)
-
-SERPER_API_KEY = os.getenv("SERPER_API_KEY")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# modular imports
+from config import SERPER_API_KEY, GROQ_API_KEY
 
 if not SERPER_API_KEY:
-    raise RuntimeError("SERPER_API_KEY missing in .env")
-
+    print("CRITICAL: SERPER_API_KEY missing")
 if not GROQ_API_KEY:
-    raise RuntimeError("GROQ_API_KEY missing in .env")
+    print("CRITICAL: GROQ_API_KEY missing")
 
 # Initialize Groq Client
-groq_client = Groq(api_key=GROQ_API_KEY)
+groq_client = None
+if GROQ_API_KEY:
+    try:
+        groq_client = Groq(api_key=GROQ_API_KEY)
+    except Exception as e:
+        print(f"Research Groq Init Error: {e}")
 
 # ---------------- APP ----------------
 app = FastAPI(title="Dromane Research API")
@@ -126,11 +126,18 @@ async def perform_research(req: ResearchRequest):
         answer = completion.choices[0].message.content
 
     except Exception as e:
-        # FAIL LOUDLY as requested
-        print(f"Groq API Error: {str(e)}")
+        # FAIL LOUDLY with more detail
+        error_str = str(e)
+        print(f"Groq Research Error: {error_str}")
+        
+        # Check if it's a 403 specifically
+        status_code = 500
+        if "403" in error_str:
+            status_code = 403
+            
         raise HTTPException(
-            status_code=500,
-            detail=f"Groq inference failed: {str(e)}"
+            status_code=status_code,
+            detail=f"Groq AI rejected the research request. This usually means the API key is restricted, the prompt is too large for your tier, or your IP/Region is blocked by Groq. Error: {error_str}"
         )
 
     # 5️⃣ Response

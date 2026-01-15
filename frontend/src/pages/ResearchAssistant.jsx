@@ -100,7 +100,7 @@ Try one of the suggested questions below or ask me anything!`
         } catch (error) {
             setMessages(prev => [...prev, {
                 role: 'system',
-                content: `**Research Error**: ${error.message}. Ensure Ollama is running and Serper is configured.`
+                content: `**Research Error**: ${error.message}`
             }]);
         } finally {
             setLoading(false);

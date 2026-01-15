@@ -9,13 +9,28 @@ const getHeaders = () => {
     };
 };
 
+const handleResponse = async (response, defaultMessage) => {
+    if (!response.ok) {
+        let errorMessage = defaultMessage;
+        try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+        } catch (e) {
+            const text = await response.text();
+            console.error(`API Error (${defaultMessage}):`, text);
+            errorMessage = `Server Error (${response.status})`;
+        }
+        throw new Error(errorMessage);
+    }
+    return response.json();
+};
+
 export const summarizeDocument = async () => {
     const response = await fetch(`${AI_API_URL}/summarize`, {
         method: 'POST',
         headers: getHeaders(),
     });
-    if (!response.ok) throw new Error('Summarization failed');
-    return response.json();
+    return handleResponse(response, 'Summarization failed');
 };
 
 export const explainCode = async (code) => {
@@ -24,8 +39,7 @@ export const explainCode = async (code) => {
         headers: getHeaders(),
         body: JSON.stringify({ question: code }),
     });
-    if (!response.ok) throw new Error('Code explanation failed');
-    return response.json();
+    return handleResponse(response, 'Code explanation failed');
 };
 
 export const humanizeText = async (text) => {
@@ -34,8 +48,16 @@ export const humanizeText = async (text) => {
         headers: getHeaders(),
         body: JSON.stringify({ question: text }),
     });
-    if (!response.ok) throw new Error('Humanizing text failed');
-    return response.json();
+    return handleResponse(response, 'Humanizing text failed');
+};
+
+export const summarizeText = async (text) => {
+    const response = await fetch(`${AI_API_URL}/summarize`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ text: text }),
+    });
+    return handleResponse(response, 'Summarization failed');
 };
 
 export const getDocuments = async () => {
@@ -79,13 +101,7 @@ export const uploadDocument = async (file) => {
         },
         body: formData
     });
-
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || "Upload failed");
-    }
-
-    return response.json();
+    return handleResponse(response, 'Upload failed');
 };
 
 export const sendChatMessage = async (question) => {
@@ -94,13 +110,7 @@ export const sendChatMessage = async (question) => {
         headers: getHeaders(),
         body: JSON.stringify({ question })
     });
-
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || "Chat failed");
-    }
-
-    return response.json();
+    return handleResponse(response, 'Chat failed');
 };
 
 export const performResearch = async (query) => {
@@ -109,13 +119,7 @@ export const performResearch = async (query) => {
         headers: getHeaders(),
         body: JSON.stringify({ query })
     });
-
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || "Research failed");
-    }
-
-    return response.json();
+    return handleResponse(response, 'Research failed');
 };
 
 export const clearDocuments = async () => {
@@ -123,12 +127,7 @@ export const clearDocuments = async () => {
         method: "DELETE",
         headers: getHeaders()
     });
-
-    if (!response.ok) {
-        throw new Error("Failed to clear history");
-    }
-
-    return await response.json();
+    return handleResponse(response, 'Failed to clear history');
 };
 
 export const updateProfile = async (name, email) => {

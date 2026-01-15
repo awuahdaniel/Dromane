@@ -221,7 +221,7 @@ export default function CodeAnalyzer() {
                                                 exit={{ opacity: 0, y: -10 }}
                                                 className="prose prose-sm dark:prose-invert max-w-none"
                                             >
-                                                <ReactMarkdown>{explanation}</ReactMarkdown>
+                                                <ReactMarkdown>{String(explanation || '')}</ReactMarkdown>
                                             </motion.div>
                                         ) : (
                                             <motion.div

@@ -7,39 +7,36 @@
 /* Base styles - Dark Mode Default (matches the premium design) */
 body {
   font-family: var(--font-inter);
-  background-color: #020617;
-  /* slate-950 */
-  color: #f8fafc;
-  /* slate-50 */
+  background-color: #191919;
+  color: #FFFFFF;
   transition: background-color 0.2s, color 0.2s;
 }
 
 html {
-  background-color: #020617;
+  background-color: #191919;
   transition: background-color 0.2s;
 }
 
 /* Light Mode Override */
 html.light body,
 html:not(.dark) body {
-  background-color: #ffffff;
-  color: #0f172a;
-  /* slate-900 */
+  background-color: #FFFFFF;
+  color: #191919;
 }
 
 html.light,
 html:not(.dark) {
-  background-color: #ffffff;
+  background-color: #FFFFFF;
 }
 
 /* Dark Mode (explicit) */
 html.dark body {
-  background-color: #020617;
-  color: #f8fafc;
+  background-color: #191919;
+  color: #FFFFFF;
 }
 
 html.dark {
-  background-color: #020617;
+  background-color: #191919;
 }
 
 /* Custom Scrollbar */
@@ -68,10 +65,10 @@ html.dark {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.glass-indigo {
-  background: rgba(79, 70, 229, 0.05);
+.glass-orange {
+  background: rgba(234, 88, 12, 0.05);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(79, 70, 229, 0.1);
+  border: 1px solid rgba(234, 88, 12, 0.1);
 }
 
 /* Prose overrides for Markdown */
@@ -85,8 +82,8 @@ html.dark {
 }
 
 .prose code {
-  color: #818cf8;
-  background: rgba(129, 140, 248, 0.1);
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.1);
   padding: 0.2rem 0.4rem;
   border-radius: 0.25rem;
   font-family: 'Fira Code', monospace;

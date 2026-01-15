@@ -30,7 +30,7 @@ export default function PDFChat() {
         setShowUpload(false);
         setMessages(prev => [...prev, {
             role: 'system',
-            content: `✅ **${doc.filename}** uploaded successfully! You can now ask questions about this document.`
+            content: `✅ **${doc?.filename || 'Document'}** uploaded successfully! You can now ask questions about this document.`
         }]);
     };
 
@@ -38,7 +38,7 @@ export default function PDFChat() {
         setCurrentDoc(doc);
         setMessages(prev => [...prev, {
             role: 'system',
-            content: `📄 Switched to: **${doc.filename}**`
+            content: `📄 Switched to: **${doc?.filename || 'Document'}**`
         }]);
     };
 
@@ -72,7 +72,7 @@ export default function PDFChat() {
             const response = await sendChatMessage(input);
             const botMessage = {
                 role: 'assistant',
-                content: response.answer || response.message
+                content: response?.answer || response?.message || 'Sorry, I couldn\'t generate a response.'
             };
             setMessages(prev => [...prev, botMessage]);
         } catch (error) {
@@ -95,7 +95,8 @@ export default function PDFChat() {
         setLoading(true);
 
         try {
-            const { summary } = await summarizeDocument();
+            const response = await summarizeDocument();
+            const summary = response?.summary || response?.answer || 'Failed to generate summary.';
             setMessages(prev => [...prev, {
                 role: 'assistant',
                 content: `### 📄 Document Summary\n\n${summary}`

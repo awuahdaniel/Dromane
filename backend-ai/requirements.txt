@@ -14,3 +14,4 @@ openai
 mysql-connector-python
 passlib[bcrypt]
 pydantic[email]
+sentence-transformers
