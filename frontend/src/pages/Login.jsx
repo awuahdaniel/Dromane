@@ -3,8 +3,8 @@ import { login } from '../lib/auth';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, Github, Sun, Moon, Eye, EyeOff } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import { Mail, Lock, ArrowRight, Github, Eye, EyeOff } from 'lucide-react';
+
 import logo from '../assets/logo.png';
 
 export default function Login() {
@@ -16,7 +16,7 @@ export default function Login() {
     const navigate = useNavigate();
     const { updateAuth } = useAuth();
     const [searchParams] = useSearchParams();
-    const { theme, setTheme } = useTheme();
+
 
     // Check for error from OAuth redirect
     useEffect(() => {
@@ -49,9 +49,7 @@ export default function Login() {
         window.location.href = 'http://localhost:8000/auth/github';
     };
 
-    const toggleTheme = () => {
-        setTheme(theme === 'dark' ? 'light' : 'dark');
-    };
+
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden transition-colors">
@@ -59,12 +57,7 @@ export default function Login() {
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#F15025]/10 blur-[120px] rounded-full" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-[#CED0CE]/10 blur-[120px] rounded-full" />
 
-            <button
-                onClick={toggleTheme}
-                className="absolute top-4 right-4 p-2 rounded-full bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 shadow-lg z-20 hover:scale-105 transition-all"
-            >
-                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
+
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}

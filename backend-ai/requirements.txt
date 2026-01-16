@@ -5,13 +5,10 @@ python-jose[cryptography]
 pypdf
 python-multipart
 requests
-numpy
 newspaper3k
 beautifulsoup4
 lxml_html_clean
 groq
-openai
 mysql-connector-python
 passlib[bcrypt]
 pydantic[email]
-sentence-transformers

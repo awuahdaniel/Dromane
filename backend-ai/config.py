@@ -8,15 +8,14 @@ load_dotenv(dotenv_path=Path(__file__).parent / ".env")
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") # Deprecated for Prod
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 SERPER_API_KEY = os.getenv("SERPER_API_KEY")
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 
 # Validate critical settings
 if not JWT_SECRET:
     print("WARNING: JWT_SECRET not found in environment!")
 if not SERPER_API_KEY:
     print("WARNING: SERPER_API_KEY not found in environment!")
-if not OPENAI_API_KEY:
-    print("WARNING: OPENAI_API_KEY not found in environment!")
+if not GROQ_API_KEY:
+    print("WARNING: GROQ_API_KEY not found in environment!")

@@ -61,22 +61,22 @@ export default function Landing() {
         <div className="min-h-screen bg-white">
             {/* Navigation */}
             <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-b border-gray-200 z-50">
-                <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                    <Link to="/" className="flex items-center gap-3 group">
-                        <img src={logo} alt="Dromane" className="h-10 w-10 object-contain" />
-                        <span className="text-2xl font-bold text-gray-900">
+                <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+                    <Link to="/" className="flex items-center gap-2 md:gap-3 group">
+                        <img src={logo} alt="Dromane" className="h-8 w-8 md:h-10 md:w-10 object-contain" />
+                        <span className="text-xl md:text-2xl font-bold text-gray-900">
                             Dromane<span className="text-[#F15025]">.ai</span>
                         </span>
                     </Link>
 
                     <div className="flex items-center gap-2 md:gap-4">
                         <Link to="/login" className="hidden sm:block">
-                            <button className="px-5 py-2.5 text-gray-700 font-medium hover:text-gray-900 transition-colors whitespace-nowrap">
+                            <button className="px-5 py-2.5 text-gray-700 font-medium hover:text-gray-900 transition-colors whitespace-nowrap rounded-full">
                                 Sign In
                             </button>
                         </Link>
                         <Link to="/register">
-                            <button className="px-4 md:px-6 py-2 md:py-2.5 bg-[#F15025] text-white font-semibold hover:bg-[#d43a15] transition-all shadow-sm hover:shadow-md whitespace-nowrap text-sm md:text-base">
+                            <button className="px-3 md:px-6 py-2 md:py-2.5 bg-[#F15025] text-white font-semibold hover:bg-[#d43a15] transition-all shadow-sm hover:shadow-md whitespace-nowrap text-sm md:text-base rounded-full">
                                 Get Started
                             </button>
                         </Link>
@@ -170,7 +170,7 @@ export default function Landing() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="inline-block mb-6 px-4 py-2 bg-[#F15025]/10 border border-[#F15025]/20 text-[#F15025] font-medium text-sm"
+                        className="inline-block mb-6 px-4 py-2 bg-[#F15025]/10 border border-[#F15025]/20 text-[#F15025] font-medium text-sm rounded-full"
                     >
                         University System Analysis & Design Project
                     </motion.div>
@@ -205,13 +205,13 @@ export default function Landing() {
                         className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
                     >
                         <Link to="/register">
-                            <button className="px-10 py-4 bg-[#F15025] text-white font-bold text-lg hover:bg-[#d43a15] transition-all shadow-xl hover:shadow-2xl flex items-center gap-2 group">
+                            <button className="px-10 py-4 bg-[#F15025] text-white font-bold text-lg hover:bg-[#d43a15] transition-all shadow-xl hover:shadow-2xl flex items-center gap-2 group rounded-full">
                                 Start Free Today
                                 <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
                             </button>
                         </Link>
                         <Link to="/login">
-                            <button className="px-10 py-4 bg-white border-2 border-gray-300 text-gray-900 font-bold text-lg hover:border-gray-400 transition-all">
+                            <button className="px-10 py-4 bg-white border-2 border-gray-300 text-gray-900 font-bold text-lg hover:border-gray-400 transition-all rounded-full">
                                 Sign In
                             </button>
                         </Link>
@@ -387,7 +387,7 @@ export default function Landing() {
                             Experience intelligent research and document analysis tools built for students and professionals.
                         </p>
                         <Link to="/register">
-                            <button className="px-10 py-4 bg-[#F15025] text-white font-bold text-lg hover:bg-[#d43a15] transition-all shadow-xl hover:shadow-2xl inline-flex items-center gap-2 group">
+                            <button className="px-10 py-4 bg-[#F15025] text-white font-bold text-lg hover:bg-[#d43a15] transition-all shadow-xl hover:shadow-2xl inline-flex items-center gap-2 group rounded-full">
                                 Get Started Free
                                 <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
                             </button>

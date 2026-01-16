@@ -1,19 +1,18 @@
 # research.py
 # Perplexity-style research assistant backend using Serper + Groq
+# OPTIMIZED FOR RENDER FREE (512MB RAM)
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import requests
 import os
-from dotenv import load_dotenv
-from pathlib import Path
-from newspaper import Article
-from bs4 import BeautifulSoup
 from typing import List
 from groq import Groq
 
 # modular imports
 from config import SERPER_API_KEY, GROQ_API_KEY
+from auth import verify_jwt
+from context_manager import ResearchContextManager
 
 if not SERPER_API_KEY:
     print("CRITICAL: SERPER_API_KEY missing")
@@ -31,37 +30,13 @@ if GROQ_API_KEY:
 # ---------------- APP ----------------
 app = FastAPI(title="Dromane Research API")
 
-# Initialize Context Manager
-# Import here to avoid circular dependencies if possible, or assume it's available
-from context_manager import ResearchContextManager
-# We need to get the embed_model from main.py or initialize it here. 
-# For now, let's initialize a new one or try to import it. 
-# Best practice: Initialize a single instance in main and pass it, but since this is mounted, 
-# we might need to rely on a shared module or re-init.
-# Re-initializing SentenceTransformer is heavy (200MB+), so let's try to import from main 
-# BUT main imports research, so we have a circular import risk.
-# SOLUTION: Move embed_model to a separate singleton file or initialize inside research.py if standalone.
-# For this implementation, we will initialize it here lazily or import from a new `ai_engine.py` if we had one.
-# Let's simplify and use the one we just imported if we can, or init a lightweight one.
-from sentence_transformers import SentenceTransformer
-embed_model = None
-try:
-    print("Research: Loading embedding model...")
-    embed_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
-    print("Research: Embedding model loaded.")
-except Exception as e:
-    print(f"Research warning: Embedding model failed {e}")
-
-context_manager = ResearchContextManager(embed_model)
+# Initialize Context Manager (No embedding model needed)
+context_manager = ResearchContextManager()
 
 class ResearchRequest(BaseModel):
     query: str
     session_id: int = None
     reset_context: bool = False
-
-# ---------------- ROUTE ----------------
-from fastapi import Depends
-from auth import verify_jwt
 
 def infer_topic(query: str) -> str:
     # Simple heuristic: first 5 words
@@ -70,6 +45,10 @@ def infer_topic(query: str) -> str:
 
 @app.post("/api/research")
 async def perform_research(req: ResearchRequest, user: dict = Depends(verify_jwt)):
+    # Lazy import to save startup memory
+    from bs4 import BeautifulSoup
+    from newspaper import Article
+
     user_id = user['id']
     query = req.query.strip()
     
@@ -82,7 +61,7 @@ async def perform_research(req: ResearchRequest, user: dict = Depends(verify_jwt
         # Create new session or get active one
         session_id = context_manager.get_or_create_session(user_id, infer_topic(query))
     
-    # Retrieve relevant context
+    # Retrieve relevant context (Last 10 messages + Summary)
     context_packet = context_manager.retrieve_context(session_id, query)
     
     # 1️⃣ Google Search (Serper)
@@ -93,7 +72,7 @@ async def perform_research(req: ResearchRequest, user: dict = Depends(verify_jwt
                 "X-API-KEY": SERPER_API_KEY,
                 "Content-Type": "application/json"
             },
-            json={"q": query, "num": 6}, # Reduced slightly to save tokens
+            json={"q": query, "num": 5}, # Reduced to 5 for speed/token savings
             timeout=10
         )
         search_res.raise_for_status()
@@ -108,7 +87,8 @@ async def perform_research(req: ResearchRequest, user: dict = Depends(verify_jwt
     headers = {"User-Agent": "Mozilla/5.0"}
 
     # 2️⃣ Scrape Sources
-    for i, r in enumerate(results, 1):
+    # We limit to top 3 for deep scraping to save time/memory/tokens
+    for i, r in enumerate(results[:3], 1):
         url = r.get("link")
         title = r.get("title")
         if not url: continue
@@ -131,58 +111,56 @@ async def perform_research(req: ResearchRequest, user: dict = Depends(verify_jwt
             except:
                 pass
 
-        if len(text) > 300:
+        if len(text) > 200:
             sources.append({
                 "id": i,
                 "title": title,
                 "url": url,
-                "content": text[:1500] 
+                "content": text[:2000] # Truncate per source
             })
 
-    if not sources:
-        # If scraping failed, use snippets from Serper
-        print("Scraping failed, using snippets")
+    # If scraping yielded too little, use snippets for the rest/all
+    if len(sources) < 3:
         for i, r in enumerate(results, 1):
-             if r.get("snippet"):
+            # check if already added
+            if any(s['url'] == r.get('link') for s in sources):
+                continue
+            
+            if r.get("snippet"):
                 sources.append({
                     "id": i,
                     "title": r.get("title"),
                     "url": r.get("link"),
                     "content": r.get("snippet")
                 })
+            if len(sources) >= 5: break
 
     # 3️⃣ Build Prompt with Context
     
     # Build Web Context
     web_context = ""
     for s in sources:
-        web_context += f"[{s['id']}] {s['title']}\n{s['content']}\n\n"
+        web_context += f"SOURCE [{s['id']}] {s['title']}\nURL: {s['url']}\nCONTENT: {s['content']}\n\n"
         
     # Build Memory Context
     memory_context = ""
     if context_packet['session_summary']:
-        memory_context += f"RESEARCH SUMMARY:\n{context_packet['session_summary']}\n\n"
-    
-    if context_packet['similar_entries']:
-        memory_context += "RELEVANT PAST FINDINGS:\n"
-        for entry in context_packet['similar_entries']:
-            memory_context += f"- Q: {entry['query']}\n  A: {entry['response'][:200]}...\n"
+        memory_context += f"PREVIOUS SUMMARY:\n{context_packet['session_summary']}\n\n"
     
     if context_packet['recent_entries']:
         memory_context += "\nRECENT CONVERSATION:\n"
-        for entry in reversed(context_packet['recent_entries']): # Show in chronological order for flow
-            memory_context += f" User: {entry['query']}\n Assistant: {entry['response'][:150]}...\n"
+        for entry in reversed(context_packet['recent_entries']): # Show in chronological order
+            memory_context += f" User: {entry['query']}\n Assistant: {entry['response'][:200]}...\n"
 
     system_prompt = """You are Dromane, a persistent and intelligent research assistant.
-Your goal is to provide a comprehensive, well-cited answer to the user's query, while maintaining continuity with previous research.
+Your goal is to provide a comprehensive, well-cited answer to the user's query, utilizing the provided web sources and maintaining continuity with the previous conversation.
 
 INSTRUCTIONS:
 1. Synthesize information from the provided WEB SOURCES.
-2. If the user's query is a follow-up (e.g., "tell me more", "what about X?"), use the MEMORY CONTEXT to understand what they are referring to.
-3. Cite your sources using [1], [2] notation.
-4. Be professional, academic yet accessible.
-5. If the new information contradicts past findings, explicitly note the specific difference.
-"""
+2. Use the MEMORY CONTEXT to answer follow-up questions or refer back to previous topics.
+3. Cite your sources using [1], [2] notation corresponding to the Source IDs.
+4. If the user asks a question not covered by the sources, use your general knowledge but mention that it is not from the provided sources.
+5. Be concise but thorough."""
 
     user_prompt = f"""MEMORY CONTEXT:
 {memory_context}
@@ -195,7 +173,6 @@ USER QUERY:
 """
 
     # 4️⃣ Ask Groq
-    print("Calling Groq Research...")
     try:
         completion = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
@@ -204,7 +181,7 @@ USER QUERY:
                 {"role": "user", "content": user_prompt}
             ],
             temperature=0.3,
-            max_tokens=1200
+            max_tokens=1000
         )
 
         answer = completion.choices[0].message.content
@@ -232,7 +209,3 @@ USER QUERY:
 async def get_sessions(user: dict = Depends(verify_jwt)):
     """Get all research sessions for the user"""
     return context_manager.get_user_sessions(user['id'])
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
