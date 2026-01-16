@@ -41,6 +41,11 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Dotenv\Dotenv;
 
+// Help function for env
+function env($key, $default = null) {
+    return $_ENV[$key] ?? $default;
+}
+
 // Load .env
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();

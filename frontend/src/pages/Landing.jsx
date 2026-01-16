@@ -69,14 +69,14 @@ export default function Landing() {
                         </span>
                     </Link>
 
-                    <div className="flex items-center gap-4">
-                        <Link to="/login">
-                            <button className="px-5 py-2.5 text-gray-700 font-medium hover:text-gray-900 transition-colors">
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <Link to="/login" className="hidden sm:block">
+                            <button className="px-5 py-2.5 text-gray-700 font-medium hover:text-gray-900 transition-colors whitespace-nowrap">
                                 Sign In
                             </button>
                         </Link>
                         <Link to="/register">
-                            <button className="px-6 py-2.5 bg-[#F15025] text-white font-semibold hover:bg-[#d43a15] transition-all shadow-sm hover:shadow-md">
+                            <button className="px-4 md:px-6 py-2 md:py-2.5 bg-[#F15025] text-white font-semibold hover:bg-[#d43a15] transition-all shadow-sm hover:shadow-md whitespace-nowrap text-sm md:text-base">
                                 Get Started
                             </button>
                         </Link>

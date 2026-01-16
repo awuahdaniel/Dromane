@@ -23,6 +23,11 @@ import logo from '../assets/logo.png';
 const SidebarAvatar = ({ user }) => {
     const [imgError, setImgError] = useState(false);
 
+    // Reset error when user picture changes
+    useEffect(() => {
+        setImgError(false);
+    }, [user?.profile_picture]);
+
     if (user?.profile_picture && !imgError) {
         return (
             <img

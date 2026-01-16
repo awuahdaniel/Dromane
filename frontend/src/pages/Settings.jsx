@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -22,6 +22,11 @@ import {
 
 const ProfileImage = ({ user, uploading, onFileChange }) => {
     const [imgError, setImgError] = useState(false);
+
+    useEffect(() => {
+        setImgError(false);
+    }, [user?.profile_picture]);
+
     return (
         <div className="relative group">
             <div className="w-20 h-20 rounded-2xl bg-[#F8F9F8] dark:bg-[#191919] border border-[#E6E8E6] dark:border-[#252525] flex items-center justify-center overflow-hidden shadow-sm">
