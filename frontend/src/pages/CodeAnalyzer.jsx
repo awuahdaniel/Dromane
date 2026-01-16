@@ -85,7 +85,7 @@ export default function CodeAnalyzer() {
             <div className="flex bg-gray-50 dark:bg-slate-950 min-h-screen transition-colors">
                 <Sidebar />
                 <main className="flex-1 flex items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-4 border-[#F15025] border-t-transparent rounded-full animate-spin" />
                 </main>
             </div>
         );
@@ -104,14 +104,14 @@ export default function CodeAnalyzer() {
                         className="space-y-2"
                     >
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                            <div className="w-12 h-12 rounded-2xl bg-[#F15025] flex items-center justify-center shadow-lg shadow-[#F15025]/20">
                                 <Code2 className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">
+                                <h1 className="text-3xl font-extrabold text-[#191919] dark:text-white">
                                     Code Analyzer
                                 </h1>
-                                <p className="text-gray-600 dark:text-slate-400">
+                                <p className="text-[#CED0CE] dark:text-[#CED0CE]">
                                     Get line-by-line explanations and optimization tips
                                 </p>
                             </div>
@@ -175,10 +175,10 @@ export default function CodeAnalyzer() {
                         >
                             <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden transition-colors">
                                 {/* Header */}
-                                <div className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-700 p-4 flex items-center justify-between">
+                                <div className="bg-[#F8F9F8] dark:bg-[#252525]/50 border-b border-[#E6E8E6] dark:border-[#252525] p-4 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                                        <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                                        <Sparkles className="w-5 h-5 text-[#F15025]" />
+                                        <h3 className="text-sm font-bold text-[#191919] dark:text-white">
                                             AI Explanation
                                         </h3>
                                     </div>
@@ -208,7 +208,7 @@ export default function CodeAnalyzer() {
                                                 exit={{ opacity: 0 }}
                                                 className="flex flex-col items-center justify-center h-64 gap-4"
                                             >
-                                                <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                                                <div className="w-12 h-12 border-4 border-[#F15025] border-t-transparent rounded-full animate-spin" />
                                                 <p className="text-sm text-gray-500 dark:text-slate-400">
                                                     Analyzing your code...
                                                 </p>

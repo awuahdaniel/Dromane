@@ -50,8 +50,8 @@ export default function CodeEditor({ onSubmit, loading }) {
             {/* Header */}
             <div className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-700 p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center">
-                        <Code className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <div className="w-8 h-8 rounded-lg bg-[#F15025]/10 flex items-center justify-center">
+                        <Code className="w-4 h-4 text-[#F15025]" />
                     </div>
                     <div>
                         <h3 className="text-sm font-bold text-gray-900 dark:text-white">Code Editor</h3>
@@ -68,9 +68,9 @@ export default function CodeEditor({ onSubmit, loading }) {
                         onChange={(e) => setLanguage(e.target.value)}
                         className="
                             px-3 py-1.5 rounded-lg text-sm font-medium
-                            bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600
-                            text-gray-900 dark:text-white
-                            focus:outline-none focus:ring-2 focus:ring-indigo-500/20
+                            bg-white dark:bg-[#191919] border border-[#E6E8E6] dark:border-[#252525]
+                            text-[#191919] dark:text-white
+                            focus:outline-none focus:ring-2 focus:ring-[#F15025]/20
                             transition-colors
                         "
                     >
@@ -144,9 +144,9 @@ export default function CodeEditor({ onSubmit, loading }) {
                     className="
                         w-full flex items-center justify-center gap-2
                         px-4 py-3 rounded-xl font-bold transition-all
-                        bg-indigo-600 hover:bg-indigo-500 text-white
-                        disabled:bg-gray-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50
-                        shadow-lg shadow-indigo-500/20
+                        bg-[#F15025] hover:bg-[#b93a19] text-white
+                        disabled:bg-[#E6E8E6] dark:disabled:bg-[#252525] disabled:cursor-not-allowed disabled:opacity-50
+                        shadow-lg shadow-[#F15025]/20
                     "
                 >
                     {loading ? (

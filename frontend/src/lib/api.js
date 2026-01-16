@@ -13,8 +13,9 @@ const handleResponse = async (response, defaultMessage) => {
     if (!response.ok) {
         let errorMessage = defaultMessage;
         try {
-            const error = await response.json();
-            errorMessage = error.detail || errorMessage;
+
+            const errorJson = await response.json();
+            errorMessage = errorJson.detail || errorJson.message || errorJson.error || errorMessage;
         } catch (e) {
             const text = await response.text();
             console.error(`API Error (${defaultMessage}):`, text);
@@ -113,11 +114,11 @@ export const sendChatMessage = async (question) => {
     return handleResponse(response, 'Chat failed');
 };
 
-export const performResearch = async (query) => {
+export const performResearch = async (query, session_id = null) => {
     const response = await fetch(`${AI_API_URL}/api/research`, {
         method: "POST",
         headers: getHeaders(),
-        body: JSON.stringify({ query })
+        body: JSON.stringify({ query, session_id })
     });
     return handleResponse(response, 'Research failed');
 };
@@ -142,9 +143,36 @@ export const updateProfile = async (name, email) => {
         throw new Error(data.error || 'Failed to update profile');
     }
 
+
     // Update local storage if successful
     if (data.token) localStorage.setItem('token', data.token);
     if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+
+    return data;
+};
+
+export const uploadProfilePicture = async (file) => {
+    const formData = new FormData();
+    formData.append("picture", file);
+
+    const token = getToken();
+    const response = await fetch(`${AUTH_API_URL}/profile/upload-picture`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        },
+        body: formData
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || 'Failed to upload profile picture');
+    }
+
+    // Update local storage if successful
+    if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+    }
 
     return data;
 };

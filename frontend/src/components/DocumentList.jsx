@@ -47,8 +47,8 @@ export default function DocumentList({ documents = [], currentDoc, onSelectDoc, 
                             className={`
                                 group relative p-3 rounded-xl cursor-pointer transition-all border
                                 ${isActive
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/30'
-                                    : 'bg-white dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800'
+                                    ? 'bg-[#F15025]/5 dark:bg-[#F15025]/10 border-[#F15025]/20 dark:border-[#F15025]/30'
+                                    : 'bg-white dark:bg-[#252525]/50 border-[#E6E8E6] dark:border-[#252525] hover:bg-[#F8F9F8] dark:hover:bg-[#252525]'
                                 }
                             `}
                             onClick={() => onSelectDoc && onSelectDoc(doc)}
@@ -57,19 +57,19 @@ export default function DocumentList({ documents = [], currentDoc, onSelectDoc, 
                                 <div className={`
                                     flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center
                                     ${isActive
-                                        ? 'bg-indigo-100 dark:bg-indigo-500/20'
-                                        : 'bg-gray-100 dark:bg-slate-700'
+                                        ? 'bg-[#F15025]/10'
+                                        : 'bg-[#F8F9F8] dark:bg-[#191919]'
                                     }
                                 `}>
-                                    <FileCode className={`w-5 h-5 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-slate-400'}`} />
+                                    <FileCode className={`w-5 h-5 ${isActive ? 'text-[#F15025]' : 'text-[#CED0CE] dark:text-[#E6E8E6]'}`} />
                                 </div>
 
                                 <div className="flex-1 min-w-0">
                                     <p className={`
                                         text-sm font-semibold truncate
                                         ${isActive
-                                            ? 'text-indigo-900 dark:text-indigo-300'
-                                            : 'text-gray-900 dark:text-white'
+                                            ? 'text-[#F15025]'
+                                            : 'text-[#191919] dark:text-white'
                                         }
                                     `}>
                                         {doc.filename}
@@ -118,7 +118,7 @@ export default function DocumentList({ documents = [], currentDoc, onSelectDoc, 
                             {isActive && (
                                 <motion.div
                                     layoutId="activeIndicator"
-                                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 dark:bg-indigo-400 rounded-r-full"
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#F15025] rounded-r-full"
                                 />
                             )}
                         </motion.div>

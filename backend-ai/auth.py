@@ -9,6 +9,9 @@ import mysql.connector
 from config import JWT_SECRET, JWT_ALGORITHM
 from database import get_db_connection
 
+
+#cd C:\Users\HP ELITE BOOK 840G3\Desktop\Dromane\dromane-ai\backend-auth
+#C:\xampp\php\php.exe -S localhost:8000 router.php
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

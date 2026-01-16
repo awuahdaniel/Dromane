@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { DashboardSkeleton, ChatSkeleton } from './components/Skeleton';
 
 // Lazy load pages for performance
+const Landing = lazy(() => import('./pages/Landing'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -19,10 +20,10 @@ const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 
 // Full screen loader for auth check
 const FullScreenLoader = () => (
-  <div className="h-screen w-full bg-slate-950 flex items-center justify-center">
+  <div className="h-screen w-full bg-[#191919] flex items-center justify-center">
     <div className="flex flex-col items-center gap-4">
-      <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-      <p className="text-slate-400 text-sm">Loading...</p>
+      <div className="w-12 h-12 border-4 border-[#F15025] border-t-transparent rounded-full animate-spin" />
+      <p className="text-[#E6E8E6] text-sm">Loading...</p>
     </div>
   </div>
 );
@@ -135,9 +136,15 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
+      {/* Landing Page */}
+      <Route path="/" element={
+        <Suspense fallback={<FullScreenLoader />}>
+          <Landing />
+        </Suspense>
+      } />
+
       {/* Default Redirection */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

@@ -12,6 +12,8 @@ require __DIR__ . '/../src/documents.php';
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 switch ($path) {
+
+
     case '/login':
         loginUser();
         break;
@@ -58,7 +60,17 @@ switch ($path) {
         }
         break;
 
+    case '/profile/upload-picture':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            uploadProfilePicture();
+        } else {
+            http_response_code(405);
+            echo json_encode(["error" => "Method not allowed"]);
+        }
+        break;
+
     default:
         http_response_code(404);
-        echo 'Not Found: ' . $path;
+        header('Content-Type: application/json');
+        echo json_encode(["error" => "Not Found: " . $path]);
 }

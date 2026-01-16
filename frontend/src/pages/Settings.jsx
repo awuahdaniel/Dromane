@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
-import { updateProfile, changePassword } from '../lib/api';
+import { updateProfile, changePassword, uploadProfilePicture } from '../lib/api';
+import { AUTH_API_URL } from '../lib/config';
 import {
     Sun,
     Moon,
@@ -14,12 +15,14 @@ import {
     X,
     Save,
     Lock,
-    AlertCircle
+    AlertCircle,
+    Camera,
+    Upload
 } from 'lucide-react';
 
 export default function Settings() {
-    const { theme, setTheme } = useTheme();
-    const { user, isLoading } = useAuth();
+    const { setTheme, theme } = useTheme();
+    const { user, isLoading, updateAuth } = useAuth();
 
     // UI State
     const [editingProfile, setEditingProfile] = useState(false);
@@ -36,6 +39,8 @@ export default function Settings() {
     const [status, setStatus] = useState({ type: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [uploadingPic, setUploadingPic] = useState(false);
+
     const themeOptions = [
         { id: 'light', label: 'Light', icon: <Sun size={20} />, description: 'Classic appearance with bright background.' },
         { id: 'dark', label: 'Dark', icon: <Moon size={20} />, description: 'Better for low light environments.' },
@@ -48,15 +53,35 @@ export default function Settings() {
         setStatus({ type: '', message: '' });
 
         try {
-            await updateProfile(name, email);
+            const data = await updateProfile(name, email);
             setStatus({ type: 'success', message: 'Profile updated successfully!' });
             setEditingProfile(false);
+            if (data.user) updateAuth(localStorage.getItem('token'), data.user);
             // Wait a bit to clear success message
             setTimeout(() => setStatus({ type: '', message: '' }), 3000);
         } catch (error) {
             setStatus({ type: 'error', message: error.message });
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploadingPic(true);
+        setStatus({ type: '', message: '' });
+
+        try {
+            const data = await uploadProfilePicture(file);
+            setStatus({ type: 'success', message: 'Profile picture updated!' });
+            if (data.user) updateAuth(localStorage.getItem('token'), data.user);
+            setTimeout(() => setStatus({ type: '', message: '' }), 3000);
+        } catch (error) {
+            setStatus({ type: 'error', message: error.message });
+        } finally {
+            setUploadingPic(false);
         }
     };
 
@@ -104,7 +129,7 @@ export default function Settings() {
             <div className="flex bg-gray-50 dark:bg-slate-950 min-h-screen transition-colors">
                 <Sidebar />
                 <main className="flex-1 flex items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-4 border-[#F15025] border-t-transparent rounded-full animate-spin" />
                 </main>
             </div>
         );
@@ -147,7 +172,7 @@ export default function Settings() {
                     {/* Theme / Appearance Card */}
                     <section className="space-y-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 transition-colors">
+                            <div className="w-10 h-10 rounded-xl bg-[#F15025]/10 flex items-center justify-center text-[#F15025] border border-[#F15025]/20 transition-colors">
                                 <Layout size={20} />
                             </div>
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">Appearance</h2>
@@ -161,13 +186,13 @@ export default function Settings() {
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => setTheme(opt.id)}
                                     className={`relative p-6 rounded-3xl border text-left transition-all ${theme === opt.id
-                                        ? 'bg-indigo-50 dark:bg-indigo-600/10 border-indigo-500 shadow-lg shadow-indigo-500/10'
-                                        : 'bg-white dark:bg-slate-900/50 border-gray-200 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700'
+                                        ? 'bg-[#F15025]/5 dark:bg-[#F15025]/10 border-[#F15025] shadow-lg shadow-[#F15025]/10'
+                                        : 'bg-white dark:bg-[#252525]/50 border-[#E6E8E6] dark:border-[#252525] hover:border-[#CED0CE] dark:hover:border-[#252525]'
                                         }`}
                                 >
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors ${theme === opt.id
-                                        ? 'bg-indigo-600 text-white'
-                                        : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400'
+                                        ? 'bg-[#F15025] text-white'
+                                        : 'bg-[#F8F9F8] dark:bg-[#191919] text-[#191919] dark:text-[#E6E8E6]'
                                         }`}>
                                         {opt.icon}
                                     </div>
@@ -175,7 +200,7 @@ export default function Settings() {
                                     <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed transition-colors">{opt.description}</p>
 
                                     {theme === opt.id && (
-                                        <div className="absolute top-4 right-4 text-indigo-500">
+                                        <div className="absolute top-4 right-4 text-[#F15025]">
                                             <Check size={18} />
                                         </div>
                                     )}
@@ -197,19 +222,45 @@ export default function Settings() {
                             {/* Profile Info Section */}
                             {!editingProfile ? (
                                 <div className="space-y-4">
-                                    <div className="flex justify-between items-center py-4 border-b border-gray-200 dark:border-slate-800/50 transition-colors">
-                                        <div>
-                                            <p className="text-sm font-bold text-gray-900 dark:text-white transition-colors">Profile Information</p>
-                                            <p className="text-xs text-gray-500 dark:text-slate-400 transition-colors mt-1">
-                                                {user?.name || 'No Name'} • {user?.email || 'No Email'}
-                                            </p>
+                                    <div className="flex items-center gap-6 py-4 border-b border-gray-200 dark:border-slate-800/50 transition-colors">
+                                        <div className="relative group">
+                                            <div className="w-20 h-20 rounded-2xl bg-[#F8F9F8] dark:bg-[#191919] border border-[#E6E8E6] dark:border-[#252525] flex items-center justify-center overflow-hidden shadow-sm">
+                                                {user?.profile_picture ? (
+                                                    <img
+                                                        src={`${AUTH_API_URL}/${user.profile_picture}`}
+                                                        alt="Profile"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <User size={32} className="text-[#CED0CE]" />
+                                                )}
+                                            </div>
+                                            <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#F15025] rounded-lg flex items-center justify-center text-white shadow-lg cursor-pointer hover:scale-110 transition-transform">
+                                                {uploadingPic ? (
+                                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                ) : (
+                                                    <Camera size={16} />
+                                                )}
+                                                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} disabled={uploadingPic} />
+                                            </label>
                                         </div>
-                                        <button
-                                            onClick={startEditing}
-                                            className="text-indigo-600 dark:text-indigo-400 text-sm font-bold hover:underline transition-colors"
-                                        >
-                                            Edit
-                                        </button>
+
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-center">
+                                                <div>
+                                                    <p className="text-sm font-bold text-gray-900 dark:text-white transition-colors">{user?.name || 'No Name'}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-slate-400 transition-colors mt-0.5">
+                                                        {user?.email || 'No Email'}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={startEditing}
+                                                    className="text-[#F15025] text-sm font-bold hover:underline transition-colors"
+                                                >
+                                                    Edit Profile
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* Password Section */}
@@ -223,7 +274,7 @@ export default function Settings() {
                                                 setChangingPassword(!changingPassword);
                                                 setStatus({ type: '', message: '' });
                                             }}
-                                            className="text-indigo-600 dark:text-indigo-400 text-sm font-bold hover:underline transition-colors"
+                                            className="text-[#F15025] text-sm font-bold hover:underline transition-colors"
                                         >
                                             {changingPassword ? 'Cancel' : 'Change'}
                                         </button>
@@ -239,7 +290,7 @@ export default function Settings() {
                                                 type="text"
                                                 value={name}
                                                 onChange={(e) => setName(e.target.value)}
-                                                className="w-full p-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                                className="w-full p-3 rounded-xl bg-[#F8F9F8] dark:bg-[#252525] border border-[#E6E8E6] dark:border-[#252525] text-[#191919] dark:text-white focus:ring-2 focus:ring-[#F15025] outline-none transition-all"
                                                 required
                                             />
                                         </div>
@@ -249,7 +300,7 @@ export default function Settings() {
                                                 type="email"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
-                                                className="w-full p-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                                className="w-full p-3 rounded-xl bg-[#F8F9F8] dark:bg-[#252525] border border-[#E6E8E6] dark:border-[#252525] text-[#191919] dark:text-white focus:ring-2 focus:ring-[#F15025] outline-none transition-all"
                                                 required
                                             />
                                         </div>
@@ -265,7 +316,7 @@ export default function Settings() {
                                         <button
                                             type="submit"
                                             disabled={isSubmitting}
-                                            className="px-6 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50"
+                                            className="px-6 py-2 rounded-xl text-sm font-bold bg-[#F15025] text-white hover:bg-[#b93a19] transition-all shadow-lg shadow-[#F15025]/20 disabled:opacity-50"
                                         >
                                             {isSubmitting ? 'Saving...' : 'Save Changes'}
                                         </button>
@@ -291,7 +342,7 @@ export default function Settings() {
                                                         type="password"
                                                         value={currentPassword}
                                                         onChange={(e) => setCurrentPassword(e.target.value)}
-                                                        className="w-full p-3 pl-10 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                                        className="w-full p-3 pl-10 rounded-xl bg-[#F8F9F8] dark:bg-[#252525] border border-[#E6E8E6] dark:border-[#252525] text-[#191919] dark:text-white focus:ring-2 focus:ring-[#F15025] outline-none transition-all"
                                                         required
                                                     />
                                                 </div>
@@ -305,7 +356,7 @@ export default function Settings() {
                                                             type="password"
                                                             value={newPassword}
                                                             onChange={(e) => setNewPassword(e.target.value)}
-                                                            className="w-full p-3 pl-10 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                                            className="w-full p-3 pl-10 rounded-xl bg-[#F8F9F8] dark:bg-[#252525] border border-[#E6E8E6] dark:border-[#252525] text-[#191919] dark:text-white focus:ring-2 focus:ring-[#F15025] outline-none transition-all"
                                                             required
                                                             minLength={6}
                                                         />
@@ -319,7 +370,7 @@ export default function Settings() {
                                                             type="password"
                                                             value={confirmPassword}
                                                             onChange={(e) => setConfirmPassword(e.target.value)}
-                                                            className="w-full p-3 pl-10 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                                            className="w-full p-3 pl-10 rounded-xl bg-[#F8F9F8] dark:bg-[#252525] border border-[#E6E8E6] dark:border-[#252525] text-[#191919] dark:text-white focus:ring-2 focus:ring-[#F15025] outline-none transition-all"
                                                             required
                                                             minLength={6}
                                                         />
@@ -330,7 +381,7 @@ export default function Settings() {
                                                 <button
                                                     type="submit"
                                                     disabled={isSubmitting}
-                                                    className="px-6 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50"
+                                                    className="px-6 py-2 rounded-xl text-sm font-bold bg-[#F15025] text-white hover:bg-[#b93a19] transition-all shadow-lg shadow-[#F15025]/20 disabled:opacity-50"
                                                 >
                                                     {isSubmitting ? 'Updating...' : 'Update Password'}
                                                 </button>

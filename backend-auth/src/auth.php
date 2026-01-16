@@ -10,7 +10,7 @@ function loginUser() {
     }
 
     $pdo = db();
-    $stmt = $pdo->prepare("SELECT id, name, email, password_hash FROM users WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT id, name, email, password_hash, profile_picture FROM users WHERE email = ?");
     $stmt->execute([$data->email]);
     $user = $stmt->fetch();
 
@@ -23,7 +23,8 @@ function loginUser() {
             "user" => [
                 "id" => $user['id'],
                 "name" => $user['name'],
-                "email" => $user['email']
+                "email" => $user['email'],
+                "profile_picture" => $user['profile_picture']
             ]
         ]);
     } else {
@@ -91,6 +92,12 @@ function updateProfile() {
         return;
     }
 
+    // Get current profile picture to maintain it in response
+    $stmt = $pdo->prepare("SELECT profile_picture FROM users WHERE id = ?");
+    $stmt->execute([$user->sub]);
+    $currentUserRecord = $stmt->fetch();
+    $profile_picture = $currentUserRecord ? $currentUserRecord['profile_picture'] : null;
+
     $stmt = $pdo->prepare("UPDATE users SET name = ?, email = ? WHERE id = ?");
     if ($stmt->execute([$name, $email, $user->sub])) {
         // Generate new token if email changed, or just return success with updated user info
@@ -101,7 +108,8 @@ function updateProfile() {
             "user" => [
                 "id" => $user->sub,
                 "name" => $name,
-                "email" => $email
+                "email" => $email,
+                "profile_picture" => $profile_picture
             ]
         ]);
     } else {
@@ -141,5 +149,69 @@ function changePassword() {
     } else {
         http_response_code(500);
         echo json_encode(["error" => "Failed to update password"]);
+    }
+}
+
+function uploadProfilePicture() {
+    $user = validateJWT();
+    
+    if (!isset($_FILES['picture'])) {
+        http_response_code(400);
+        echo json_encode(["error" => "No file uploaded"]);
+        return;
+    }
+
+    $file = $_FILES['picture'];
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    
+    if (!in_array($file['type'], $allowedTypes)) {
+        http_response_code(400);
+        echo json_encode(["error" => "Only JPG, PNG, GIF, and WebP are allowed"]);
+        return;
+    }
+
+    if ($file['size'] > 2 * 1024 * 1024) { // 2MB limit
+        http_response_code(400);
+        echo json_encode(["error" => "File size must be less than 2MB"]);
+        return;
+    }
+
+    $uploadDir = __DIR__ . '/../public/uploads/profiles/';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+
+    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $filename = $user->sub . '_' . time() . '.' . $extension;
+    $targetFile = $uploadDir . $filename;
+
+    if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+        $pdo = db();
+        
+        // Delete old picture if it exists
+        $stmt = $pdo->prepare("SELECT profile_picture FROM users WHERE id = ?");
+        $stmt->execute([$user->sub]);
+        $oldPic = $stmt->fetchColumn();
+        if ($oldPic && file_exists(__DIR__ . '/../public/' . $oldPic)) {
+            unlink(__DIR__ . '/../public/' . $oldPic);
+        }
+
+        $relativePath = 'uploads/profiles/' . $filename;
+        $stmt = $pdo->prepare("UPDATE users SET profile_picture = ? WHERE id = ?");
+        $stmt->execute([$relativePath, $user->sub]);
+
+        // Get updated user data
+        $stmt = $pdo->prepare("SELECT id, name, email, profile_picture FROM users WHERE id = ?");
+        $stmt->execute([$user->sub]);
+        $updatedUser = $stmt->fetch();
+
+        echo json_encode([
+            "message" => "Profile picture updated",
+            "profile_picture" => $relativePath,
+            "user" => $updatedUser
+        ]);
+    } else {
+        http_response_code(500);
+        echo json_encode(["error" => "Failed to save file"]);
     }
 }

@@ -49,26 +49,26 @@ html.dark {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #252525;
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #333333;
 }
 
 /* Glassmorphism Classes */
 .glass {
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(25, 25, 25, 0.4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .glass-orange {
-  background: rgba(234, 88, 12, 0.05);
+  background: rgba(241, 80, 37, 0.05);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(234, 88, 12, 0.1);
+  border: 1px solid rgba(241, 80, 37, 0.1);
 }
 
 /* Prose overrides for Markdown */
@@ -82,16 +82,16 @@ html.dark {
 }
 
 .prose code {
-  color: #fb923c;
-  background: rgba(251, 146, 60, 0.1);
+  color: #F15025;
+  background: rgba(241, 80, 37, 0.1);
   padding: 0.2rem 0.4rem;
   border-radius: 0.25rem;
   font-family: 'Fira Code', monospace;
 }
 
 .prose pre {
-  background: #0f172a !important;
-  border: 1px solid #1e293b;
+  background: #252525 !important;
+  border: 1px solid #333333;
   border-radius: 0.75rem;
   padding: 1rem;
 }

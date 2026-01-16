@@ -130,7 +130,7 @@ export default function PDFChat() {
             <div className="flex bg-gray-50 dark:bg-slate-950 min-h-screen transition-colors">
                 <Sidebar />
                 <main className="flex-1 flex items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-4 border-[#F15025] border-t-transparent rounded-full animate-spin" />
                 </main>
             </div>
         );
@@ -165,14 +165,14 @@ export default function PDFChat() {
                 {/* Header */}
                 <div className="absolute top-4 left-8 z-10 flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                        <span className="text-lg font-bold text-gray-900 dark:text-white">
+                        <FileText className="w-5 h-5 text-[#F15025]" />
+                        <span className="text-lg font-bold text-[#191919] dark:text-white">
                             PDF Research Assistant
                         </span>
                     </div>
                     {currentDoc && (
-                        <div className="px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30">
-                            <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                        <div className="px-3 py-1 rounded-full bg-[#F15025]/10 border border-[#F15025]/30">
+                            <span className="text-xs font-medium text-[#F15025]">
                                 {currentDoc.filename}
                             </span>
                         </div>

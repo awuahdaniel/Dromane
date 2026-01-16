@@ -3,13 +3,14 @@ import { login } from '../lib/auth';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, Github, Sun, Moon } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Github, Sun, Moon, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import logo from '../assets/logo.png';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -55,8 +56,8 @@ export default function Login() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden transition-colors">
             {/* Background Decor */}
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-500/10 dark:bg-orange-600/10 blur-[120px] rounded-full" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-red-500/10 dark:bg-red-600/10 blur-[120px] rounded-full" />
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#F15025]/10 blur-[120px] rounded-full" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-[#CED0CE]/10 blur-[120px] rounded-full" />
 
             <button
                 onClick={toggleTheme}
@@ -68,14 +69,14 @@ export default function Login() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md bg-white/70 dark:bg-slate-900/50 backdrop-blur-xl border border-gray-200 dark:border-slate-800 p-8 rounded-3xl shadow-xl dark:shadow-2xl relative z-10 transition-colors"
+                className="w-full max-w-md bg-white dark:bg-[#191919] border border-[#E6E8E6] dark:border-[#252525] p-8 rounded-3xl shadow-xl dark:shadow-2xl relative z-10 transition-colors"
             >
                 <div className="text-center mb-8">
                     <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">
                         <img src={logo} alt="Dromane.ai" className="w-full h-full object-contain drop-shadow-2xl" />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-tight transition-colors">Welcome Back</h1>
-                    <p className="text-gray-500 dark:text-slate-500 text-sm mt-2 transition-colors">Sign in to your Dromane hub</p>
+                    <h1 className="text-2xl font-bold text-[#191919] dark:text-white uppercase tracking-tight transition-colors">Welcome Back</h1>
+                    <p className="text-[#CED0CE] dark:text-[#CED0CE] text-sm mt-2 transition-colors">Sign in to your Dromane hub</p>
                 </div>
 
                 {error && (
@@ -90,32 +91,39 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="relative group">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#CED0CE] group-focus-within:text-[#F15025] transition-colors" size={18} />
                         <input
                             type="email"
                             placeholder="Email address"
-                            className="w-full bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl py-3 pl-10 pr-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all font-medium"
+                            className="w-full bg-gray-50 dark:bg-slate-800/50 rounded-xl py-3 pl-10 pr-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
                     <div className="relative group">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#CED0CE] group-focus-within:text-[#F15025] transition-colors" size={18} />
                         <input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="Password"
-                            className="w-full bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl py-3 pl-10 pr-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all font-medium"
+                            className="w-full bg-gray-50 dark:bg-slate-800/50 rounded-xl py-3 pl-10 pr-12 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#CED0CE] hover:text-[#F15025] transition-colors"
+                        >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                     </div>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 group disabled:opacity-50"
+                        className="w-full bg-[#F15025] hover:bg-[#b93a19] text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-[#F15025]/30 flex items-center justify-center gap-2 group disabled:opacity-50"
                     >
                         {loading ? 'Authenticating...' : (
                             <>

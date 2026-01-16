@@ -61,7 +61,7 @@ export default function Dashboard() {
             <div className="flex bg-gray-50 dark:bg-slate-950 min-h-screen transition-colors">
                 <Sidebar />
                 <main className="flex-1 flex items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-4 border-[#F15025] border-t-transparent rounded-full animate-spin" />
                 </main>
             </div>
         );
@@ -78,7 +78,7 @@ export default function Dashboard() {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20 text-orange-600 dark:text-orange-500 text-xs font-bold w-fit uppercase tracking-tighter"
+                            className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#F15025]/10 border border-[#F15025]/20 text-[#F15025] text-xs font-bold w-fit uppercase tracking-tighter"
                         >
                             <Sparkles size={14} />
                             Welcome back{user?.name ? `, ${user.name}` : ''}
@@ -88,9 +88,9 @@ export default function Dashboard() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight transition-colors"
+                            className="text-4xl md:text-5xl font-extrabold text-[#191919] dark:text-white tracking-tight transition-colors"
                         >
-                            What shall we <span className="text-orange-600 dark:text-orange-500">solve</span> today?
+                            What shall we <span className="text-[#F15025]">solve</span> today?
                         </motion.h1>
 
                         <motion.p
@@ -112,10 +112,10 @@ export default function Dashboard() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 + (idx * 0.1) }}
                                 onClick={() => navigate(tool.path)}
-                                className="group cursor-pointer bg-white dark:bg-slate-900/50 backdrop-blur-xl border border-gray-200 dark:border-slate-800 p-8 rounded-3xl hover:border-orange-300 dark:hover:border-orange-500/30 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-all shadow-lg dark:shadow-2xl relative overflow-hidden"
+                                className="group cursor-pointer bg-white dark:bg-[#191919] border border-[#E6E8E6] dark:border-[#252525] p-8 rounded-3xl hover:border-[#F15025]/30 hover:bg-[#F8F9F8] dark:hover:bg-[#252525] transition-all shadow-lg dark:shadow-2xl relative overflow-hidden"
                             >
                                 {/* Hover Accent */}
-                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange-100 dark:bg-orange-600/5 blur-3xl group-hover:bg-orange-200 dark:group-hover:bg-orange-600/10 transition-colors" />
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#F15025]/5 blur-3xl group-hover:bg-[#F15025]/10 transition-colors" />
 
                                 <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg border border-gray-200 dark:border-slate-700">
                                     {tool.icon}
@@ -126,7 +126,7 @@ export default function Dashboard() {
                                     {tool.description}
                                 </p>
 
-                                <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 font-bold text-sm">
+                                <div className="flex items-center gap-2 text-[#F15025] font-bold text-sm">
                                     Open Tool <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                                 </div>
                             </motion.div>

@@ -131,7 +131,7 @@ Try one of the suggested questions below or ask me anything!`
             <div className="flex bg-gray-50 dark:bg-slate-950 min-h-screen transition-colors">
                 <Sidebar />
                 <main className="flex-1 flex items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-4 border-[#F15025] border-t-transparent rounded-full animate-spin" />
                 </main>
             </div>
         );
@@ -155,8 +155,8 @@ Try one of the suggested questions below or ask me anything!`
                             className="space-y-2"
                         >
                             <div className="flex items-center gap-2 px-2">
-                                <Lightbulb className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
-                                <h4 className="text-xs font-bold text-gray-700 dark:text-slate-300">
+                                <Lightbulb className="w-4 h-4 text-[#F15025]" />
+                                <h4 className="text-xs font-bold text-[#191919] dark:text-[#E6E8E6]">
                                     {topic.category}
                                 </h4>
                             </div>
@@ -168,9 +168,9 @@ Try one of the suggested questions below or ask me anything!`
                                     disabled={loading}
                                     className="
                                         w-full text-left p-3 rounded-xl transition-all text-sm
-                                        bg-white dark:bg-slate-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10
-                                        border border-gray-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/30
-                                        text-gray-700 dark:text-slate-300
+                                        bg-white dark:bg-[#252525]/50 hover:bg-[#F15025]/5 dark:hover:bg-[#F15025]/10
+                                        border border-[#E6E8E6] dark:border-[#252525] hover:border-[#F15025]/30 dark:hover:border-[#F15025]/40
+                                        text-[#191919] dark:text-[#E6E8E6]
                                         disabled:opacity-50 disabled:cursor-not-allowed
                                     "
                                 >
@@ -187,8 +187,8 @@ Try one of the suggested questions below or ask me anything!`
                         onClick={handleExportChat}
                         className="
                             m-4 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2
-                            bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20
-                            text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30
+                            bg-[#F15025]/5 dark:bg-[#F15025]/10 hover:bg-[#F15025]/10 dark:hover:bg-[#F15025]/20
+                            text-[#F15025] border border-[#F15025]/20 dark:border-[#F15025]/30
                         "
                     >
                         <Download className="w-4 h-4" />
@@ -201,8 +201,8 @@ Try one of the suggested questions below or ask me anything!`
                 {/* Header */}
                 <div className="absolute top-4 left-8 z-10 flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                        <Search className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                        <span className="text-lg font-bold text-gray-900 dark:text-white">
+                        <Search className="w-5 h-5 text-[#F15025]" />
+                        <span className="text-lg font-bold text-[#191919] dark:text-white">
                             Research Assistant
                         </span>
                     </div>

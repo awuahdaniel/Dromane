@@ -48,7 +48,7 @@ export default function Summarizer() {
             <div className="flex bg-gray-50 dark:bg-slate-950 min-h-screen transition-colors">
                 <Sidebar />
                 <main className="flex-1 flex items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-4 border-[#F15025] border-t-transparent rounded-full animate-spin" />
                 </main>
             </div>
         );
@@ -67,14 +67,14 @@ export default function Summarizer() {
                         className="space-y-2"
                     >
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center shadow-lg">
+                            <div className="w-12 h-12 rounded-2xl bg-[#F15025] flex items-center justify-center shadow-lg shadow-[#F15025]/20">
                                 <AlignLeft className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">
+                                <h1 className="text-3xl font-extrabold text-[#191919] dark:text-white">
                                     Text Summarizer
                                 </h1>
-                                <p className="text-gray-600 dark:text-slate-400">
+                                <p className="text-[#CED0CE] dark:text-[#CED0CE]">
                                     Condense long articles, essays, and documents into key insights
                                 </p>
                             </div>
@@ -113,9 +113,9 @@ export default function Summarizer() {
                                         className="
                                             w-full flex items-center justify-center gap-2
                                             px-4 py-3 rounded-xl font-bold transition-all
-                                            bg-orange-500 hover:bg-orange-600 text-white
-                                            disabled:bg-gray-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50
-                                            shadow-lg shadow-orange-500/20
+                                            bg-[#F15025] hover:bg-[#b93a19] text-white
+                                            disabled:bg-[#E6E8E6] dark:disabled:bg-[#252525] disabled:cursor-not-allowed disabled:opacity-50
+                                            shadow-lg shadow-[#F15025]/20
                                         "
                                     >
                                         {loading ? (
@@ -142,10 +142,10 @@ export default function Summarizer() {
                             className="flex flex-col h-[600px]"
                         >
                             <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden flex flex-col h-full transition-colors">
-                                <div className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-700 p-4 flex items-center justify-between">
+                                <div className="bg-[#F8F9F8] dark:bg-[#252525]/50 border-b border-[#E6E8E6] dark:border-[#252525] p-4 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <AlignLeft className="w-4 h-4 text-orange-500" />
-                                        <h3 className="text-sm font-bold text-gray-900 dark:text-white">Summary</h3>
+                                        <AlignLeft className="w-4 h-4 text-[#F15025]" />
+                                        <h3 className="text-sm font-bold text-[#191919] dark:text-white">Summary</h3>
                                     </div>
                                     {summary && (
                                         <button

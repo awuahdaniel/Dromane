@@ -17,6 +17,7 @@ import {
 import { logout } from '../lib/auth';
 import { useAuth } from '../context/AuthContext';
 import { getDocuments } from '../lib/api';
+import { AUTH_API_URL } from '../lib/config';
 import logo from '../assets/logo.png';
 
 export default function Sidebar({ children }) {
@@ -130,8 +131,16 @@ export default function Sidebar({ children }) {
             {/* User Footer */}
             <div className="p-4 border-t border-[#E6E8E6] dark:border-[#252525] bg-[#F8F9F8]/50 dark:bg-[#191919]/50">
                 <div className={`flex items-center gap-3 p-2 rounded-xl transition-all ${isOpen ? 'hover:bg-[#E6E8E6] dark:hover:bg-[#252525]' : 'justify-center'}`}>
-                    <div className="w-8 h-8 rounded-full bg-[#E6E8E6] dark:bg-[#252525] flex items-center justify-center text-[#CED0CE] dark:text-[#E6E8E6] border border-[#CED0CE] dark:border-[#252525] shrink-0 shadow-sm">
-                        <User size={16} />
+                    <div className="w-8 h-8 rounded-full bg-[#E6E8E6] dark:bg-[#252525] flex items-center justify-center text-[#CED0CE] dark:text-[#E6E8E6] border border-[#CED0CE] dark:border-[#252525] shrink-0 shadow-sm overflow-hidden">
+                        {user?.profile_picture ? (
+                            <img
+                                src={`${AUTH_API_URL}/${user.profile_picture}`}
+                                alt="Profile"
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <User size={16} />
+                        )}
                     </div>
                     {isOpen && (
                         <div className="flex-1 min-w-0">

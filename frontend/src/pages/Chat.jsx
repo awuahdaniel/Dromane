@@ -115,7 +115,7 @@ export default function Chat({ mode = 'research' }) {
                 <div className="absolute top-4 left-8 z-10">
                     <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${backendReady ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
-                        <span className="text-[10px] font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest transition-colors">
+                        <span className="text-[10px] font-bold text-[#CED0CE] dark:text-[#E6E8E6] uppercase tracking-widest transition-colors">
                             {getPageTitle()} {backendReady ? '(Online)' : '(Offline)'}
                         </span>
                     </div>
