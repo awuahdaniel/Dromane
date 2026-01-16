@@ -6,15 +6,32 @@ import {
     Bot,
     User,
     Sparkles,
-    Terminal,
-    Copy,
     Check,
-    Zap,
+    Copy,
     Quote
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { AUTH_API_URL } from '../lib/config';
 import { useAuth } from '../context/AuthContext';
+
+const MessageAvatar = ({ role, user }) => {
+    const [imgError, setImgError] = useState(false);
+
+    if (role === 'user') {
+        if (user?.profile_picture && !imgError) {
+            return (
+                <img
+                    src={`${AUTH_API_URL}/${user.profile_picture}`}
+                    alt="User"
+                    className="w-full h-full object-cover"
+                    onError={() => setImgError(true)}
+                />
+            );
+        }
+        return <User size={18} />;
+    }
+    return <img src={logo} alt="Dromane" className="w-full h-full object-contain" />;
+};
 
 export default function ChatWindow({ messages, onSendMessage, onSummarize, onExplainCode, loading, currentDoc }) {
     const { user } = useAuth();
@@ -49,14 +66,15 @@ export default function ChatWindow({ messages, onSendMessage, onSummarize, onExp
             </div>
 
             {/* Header */}
-            <header className="h-16 border-b border-gray-200 dark:border-slate-800/50 flex items-center justify-between px-8 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-10 transition-colors">
+            {/* Header */}
+            <header className="h-16 border-b border-gray-200 dark:border-slate-800/50 flex items-center justify-between px-4 md:px-8 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-10 transition-colors">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-[#F15025]/10 flex items-center justify-center p-1.5 transition-colors">
                         <img src={logo} alt="Dromane" className="w-full h-full object-contain" />
                     </div>
                     <div>
                         <h2 className="text-sm font-semibold text-gray-900 dark:text-white transition-colors">Research Assistant</h2>
-                        <p className="text-[10px] text-gray-500 dark:text-slate-500 flex items-center gap-1 uppercase tracking-wider transition-colors">
+                        <p className="text-[10px] text-gray-500 dark:text-slate-500 flex items-center gap-1 uppercase tracking-wider transition-colors max-w-[200px] truncate">
                             {currentDoc ? (
                                 <>
                                     <Sparkles size={10} className="text-[#F15025]" />
@@ -69,21 +87,7 @@ export default function ChatWindow({ messages, onSendMessage, onSummarize, onExp
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={onExplainCode}
-                        className="px-3 py-1 text-xs bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 rounded-md transition-all flex items-center gap-2 text-gray-700 dark:text-slate-300"
-                    >
-                        <Terminal size={12} />
-                        Explain Code
-                    </button>
-                    <button
-                        onClick={onSummarize}
-                        disabled={!currentDoc || loading}
-                        className="px-3 py-1 text-xs bg-[#F15025] hover:bg-[#b93a19] text-white rounded-md transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <Zap size={12} />
-                        Summarize
-                    </button>
+                    {/* Actions removed as requested */}
                 </div>
             </header>
 
@@ -116,15 +120,7 @@ export default function ChatWindow({ messages, onSendMessage, onSummarize, onExp
                                     ? 'bg-[#F15025] text-white'
                                     : 'bg-[#F8F9F8] dark:bg-[#191919] text-[#CED0CE] dark:text-[#E6E8E6] p-1.5'
                                     }`}>
-                                    {msg.role === 'user' ? (
-                                        user?.profile_picture ? (
-                                            <img src={`${AUTH_API_URL}/${user.profile_picture}`} alt="User" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <User size={18} />
-                                        )
-                                    ) : (
-                                        <img src={logo} alt="Dromane" className="w-full h-full object-contain" />
-                                    )}
+                                    <MessageAvatar role={msg.role} user={user} />
                                 </div>
 
                                 <div className={`flex flex-col space-y-1 ${msg.role === 'user' ? 'items-end' : ''}`}>

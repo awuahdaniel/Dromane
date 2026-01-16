@@ -199,20 +199,13 @@ Try one of the suggested questions below or ask me anything!`
 
             <main className="flex-1 flex flex-col relative">
                 {/* Header */}
-                <div className="absolute top-4 left-8 z-10 flex items-center gap-4">
-                    <div className="flex items-center gap-2">
+                {/* Header */}
+                <div className="absolute top-16 md:top-4 left-4 md:left-8 z-10 flex flex-col md:flex-row md:items-center gap-2 md:gap-4 pointer-events-none md:pointer-events-auto">
+                    <div className="flex items-center gap-2 pointer-events-auto">
                         <Search className="w-5 h-5 text-[#F15025]" />
                         <span className="text-lg font-bold text-[#191919] dark:text-white">
                             Research Assistant
                         </span>
-                    </div>
-                    <div className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30">
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                                AI Online
-                            </span>
-                        </div>
                     </div>
                 </div>
 

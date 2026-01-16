@@ -71,7 +71,7 @@ export default function Dashboard() {
         <div className="flex bg-gray-50 dark:bg-slate-950 min-h-screen transition-colors">
             <Sidebar />
 
-            <main className="flex-1 p-8 overflow-y-auto">
+            <main className="flex-1 p-4 md:p-8 overflow-y-auto mt-12 md:mt-0">
                 <div className="space-y-12">
                     {/* Hero Section */}
                     <section className="space-y-4">
@@ -88,7 +88,7 @@ export default function Dashboard() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-4xl md:text-5xl font-extrabold text-[#191919] dark:text-white tracking-tight transition-colors"
+                            className="text-3xl md:text-5xl font-extrabold text-[#191919] dark:text-white tracking-tight transition-colors"
                         >
                             What shall we <span className="text-[#F15025]">solve</span> today?
                         </motion.h1>
@@ -97,7 +97,7 @@ export default function Dashboard() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-gray-600 dark:text-slate-400 max-w-2xl text-lg transition-colors"
+                            className="text-gray-600 dark:text-slate-400 max-w-2xl text-base md:text-lg transition-colors"
                         >
                             Your unified workspace for research and AI-powered coding. Select a tool below to get started.
                         </motion.p>
@@ -112,7 +112,7 @@ export default function Dashboard() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 + (idx * 0.1) }}
                                 onClick={() => navigate(tool.path)}
-                                className="group cursor-pointer bg-white dark:bg-[#191919] border border-[#E6E8E6] dark:border-[#252525] p-8 rounded-3xl hover:border-[#F15025]/30 hover:bg-[#F8F9F8] dark:hover:bg-[#252525] transition-all shadow-lg dark:shadow-2xl relative overflow-hidden"
+                                className="group cursor-pointer bg-white dark:bg-[#191919] border border-[#E6E8E6] dark:border-[#252525] p-6 md:p-8 rounded-3xl hover:border-[#F15025]/30 hover:bg-[#F8F9F8] dark:hover:bg-[#252525] transition-all shadow-lg dark:shadow-2xl relative overflow-hidden"
                             >
                                 {/* Hover Accent */}
                                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#F15025]/5 blur-3xl group-hover:bg-[#F15025]/10 transition-colors" />

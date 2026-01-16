@@ -69,7 +69,7 @@ export default function Login() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md bg-white dark:bg-[#191919] border border-[#E6E8E6] dark:border-[#252525] p-8 rounded-3xl shadow-xl dark:shadow-2xl relative z-10 transition-colors"
+                className="w-full max-w-md bg-white dark:bg-[#191919] border border-[#E6E8E6] dark:border-[#252525] p-6 md:p-8 rounded-3xl shadow-xl dark:shadow-2xl relative z-10 transition-colors"
             >
                 <div className="text-center mb-8">
                     <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">

@@ -95,7 +95,7 @@ export default function CodeAnalyzer() {
         <div className="flex bg-gray-50 dark:bg-slate-950 min-h-screen transition-colors">
             <Sidebar />
 
-            <main className="flex-1 p-8 overflow-y-auto">
+            <main className="flex-1 p-4 md:p-8 overflow-y-auto mt-12 md:mt-0">
                 <div className="max-w-7xl mx-auto space-y-8">
                     {/* Header */}
                     <motion.div

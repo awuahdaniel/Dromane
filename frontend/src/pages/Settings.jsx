@@ -20,6 +20,34 @@ import {
     Upload
 } from 'lucide-react';
 
+const ProfileImage = ({ user, uploading, onFileChange }) => {
+    const [imgError, setImgError] = useState(false);
+    return (
+        <div className="relative group">
+            <div className="w-20 h-20 rounded-2xl bg-[#F8F9F8] dark:bg-[#191919] border border-[#E6E8E6] dark:border-[#252525] flex items-center justify-center overflow-hidden shadow-sm">
+                {user?.profile_picture && !imgError ? (
+                    <img
+                        src={`${AUTH_API_URL}/${user.profile_picture}`}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                        onError={() => setImgError(true)}
+                    />
+                ) : (
+                    <User size={32} className="text-[#CED0CE]" />
+                )}
+            </div>
+            <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#F15025] rounded-lg flex items-center justify-center text-white shadow-lg cursor-pointer hover:scale-110 transition-transform">
+                {uploading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                    <Camera size={16} />
+                )}
+                <input type="file" className="hidden" accept="image/*" onChange={onFileChange} disabled={uploading} />
+            </label>
+        </div>
+    );
+};
+
 export default function Settings() {
     const { setTheme, theme } = useTheme();
     const { user, isLoading, updateAuth } = useAuth();
@@ -223,27 +251,7 @@ export default function Settings() {
                             {!editingProfile ? (
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-6 py-4 border-b border-gray-200 dark:border-slate-800/50 transition-colors">
-                                        <div className="relative group">
-                                            <div className="w-20 h-20 rounded-2xl bg-[#F8F9F8] dark:bg-[#191919] border border-[#E6E8E6] dark:border-[#252525] flex items-center justify-center overflow-hidden shadow-sm">
-                                                {user?.profile_picture ? (
-                                                    <img
-                                                        src={`${AUTH_API_URL}/${user.profile_picture}`}
-                                                        alt="Profile"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <User size={32} className="text-[#CED0CE]" />
-                                                )}
-                                            </div>
-                                            <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#F15025] rounded-lg flex items-center justify-center text-white shadow-lg cursor-pointer hover:scale-110 transition-transform">
-                                                {uploadingPic ? (
-                                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                                ) : (
-                                                    <Camera size={16} />
-                                                )}
-                                                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} disabled={uploadingPic} />
-                                            </label>
-                                        </div>
+                                        <ProfileImage user={user} uploading={uploadingPic} onFileChange={handleFileChange} />
 
                                         <div className="flex-1">
                                             <div className="flex justify-between items-center">
@@ -393,7 +401,7 @@ export default function Settings() {
                         </div>
                     </section>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }
