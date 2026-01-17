@@ -8,6 +8,8 @@ from pathlib import Path
 from pypdf import PdfReader
 from typing import List, Optional
 from dotenv import load_dotenv
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 # Load environment variables
 load_dotenv()
@@ -50,17 +52,19 @@ def ensure_tables():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
+        # PostgreSQL syntax: SERIAL instead of AUTO_INCREMENT, TEXT for content
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS pdf_cache (
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 user_id INT NOT NULL,
                 filename VARCHAR(255) NOT NULL,
-                content MEDIUMTEXT, 
+                content TEXT, 
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                INDEX idx_user (user_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
         """)
+        # Create index separately for PostgreSQL
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_pdf_cache_user ON pdf_cache (user_id);")
         conn.commit()
     except Exception as e:
         print(f"DB Init Error: {e}")
@@ -68,7 +72,12 @@ def ensure_tables():
         cursor.close()
         conn.close()
 
-ensure_tables()
+# In Supabase, tables are usually created via dashboard or migration tool,
+# but we'll try to ensure them here as well.
+try:
+    ensure_tables()
+except:
+    pass
 
 # ----------------------
 # Auth routes
@@ -148,7 +157,7 @@ async def upload_pdf(file: UploadFile = File(...), user: dict = Depends(verify_j
         raise HTTPException(status_code=400, detail="PDF is empty or unreadable")
     
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("SELECT id FROM pdf_cache WHERE user_id=%s", (user_id,))
     existing = cursor.fetchone()
     
@@ -184,7 +193,7 @@ async def chat(request: QuestionRequest, user: dict = Depends(verify_jwt)):
     
     user_id = user.get("id")
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("SELECT content, filename FROM pdf_cache WHERE user_id=%s", (user_id,))
     row = cursor.fetchone()
     cursor.close()
@@ -192,8 +201,8 @@ async def chat(request: QuestionRequest, user: dict = Depends(verify_jwt)):
     
     system_msg = "You are a highly capable AI research assistant for Dromane.ai."
     if row:
-        pdf_text = row[0][:40000]
-        system_msg += f"\n\nCONTEXT FROM PDF ({row[1]}):\n{pdf_text}\n\nAnswer based on the PDF."
+        pdf_text = row['content'][:40000]
+        system_msg += f"\n\nCONTEXT FROM PDF ({row['filename']}):\n{pdf_text}\n\nAnswer based on the PDF."
     
     response = groq_client.chat.completions.create(
         model="llama-3.1-8b-instant",
@@ -218,13 +227,13 @@ async def summarize(request: SummarizeRequest = None, user: dict = Depends(verif
         text_to_summarize = request.text
     else:
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("SELECT content FROM pdf_cache WHERE user_id = %s", (user_id,))
         row = cursor.fetchone()
         cursor.close()
         conn.close()
         if row:
-            text_to_summarize = row[0][:15000] 
+            text_to_summarize = row['content'][:15000] 
         else:
             raise HTTPException(status_code=400, detail="No text provided and no document uploaded")
     

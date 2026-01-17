@@ -1,23 +1,59 @@
-# Secrets & Environment Variables - CRITICAL
+# Environment Variables (CRITICAL)
 .env
+.env.*
 .env.local
-.env.*.local
-*.pem
-*.key
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Dependencies
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+
+# Node / Frontend
 node_modules/
-backend-auth/vendor/
-backend-ai/venv/
-backend-ai/__pycache__/
-*.pyc
+/dist
+/build
+.npm
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# IDEs & OS
-.vscode/
-.idea/
+# PHP
+/vendor/
+composer.phar
+
+# Logs and transient files
+*.log
+crash_log.txt
+test_db_prod.py
+test_verbose.py
+test_db_prod.php
+test_db_prod.php
+
+# Operating System Files
 .DS_Store
 Thumbs.db
-
-# Build Outputs
-frontend/dist/
-frontend/build/
+desktop.ini

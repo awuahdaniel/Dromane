@@ -6,7 +6,8 @@ from fastapi import HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr
-import mysql.connector
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from config import JWT_SECRET, JWT_ALGORITHM
 from database import get_db_connection
 
@@ -57,44 +58,47 @@ def authenticate_user(email: str, password: str):
     conn = None
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        # In psycopg2, we use RealDictCursor for dictionary-like results
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
         
         if not user or not verify_password(password, user['password_hash']):
             return False
-        return user
+        return dict(user) # Convert RealDictRow to regular dict
     except Exception as e:
         print(f"Auth Error: {e}")
         return False
     finally:
-        if conn and conn.is_connected():
-            if 'cursor' in locals(): cursor.close()
+        if conn:
+            cursor.close()
             conn.close()
 
 def register_user(user_data: UserRegister):
     conn = None
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("SELECT id FROM users WHERE email = %s", (user_data.email,))
         if cursor.fetchone():
             raise HTTPException(status_code=400, detail="Email already registered")
         
         hashed_pw = get_password_hash(user_data.password)
+        # PostgreSQL uses RETURNING id instead of lastrowid
         cursor.execute(
-            "INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)",
+            "INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s) RETURNING id",
             (user_data.name, user_data.email, hashed_pw)
         )
+        new_id = cursor.fetchone()['id']
         conn.commit()
-        new_id = cursor.lastrowid
+        
         return {"id": new_id, "name": user_data.name, "email": user_data.email}
-    except mysql.connector.Error as err:
+    except psycopg2.Error as err:
         print(f"DB Error: {err}")
-        raise HTTPException(status_code=500, detail="Database error during registration")
+        raise HTTPException(status_code=500, detail=f"Database error during registration: {str(err)}")
     finally:
-        if conn and conn.is_connected():
-            if 'cursor' in locals(): cursor.close()
+        if conn:
+            cursor.close()
             conn.close()
 
 def verify_jwt(credentials: HTTPAuthorizationCredentials = Depends(security)):

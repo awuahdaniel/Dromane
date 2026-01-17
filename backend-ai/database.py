@@ -1,25 +1,28 @@
 import os
-import mysql.connector
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 
 load_dotenv()
 
 def get_db_connection():
     """
-    Establishes a connection to the MySQL database.
+    Establishes a connection to the PostgreSQL database (Supabase).
     Returns:
-        mysql.connector.connection.MySQLConnection: The database connection object.
+        psycopg2.extensions.connection: The database connection object.
     Raises:
-        mysql.connector.Error: If the connection fails.
+        psycopg2.Error: If the connection fails.
     """
     try:
-        connection = mysql.connector.connect(
-            host=os.getenv("DB_HOST", "localhost"),
-            user=os.getenv("DB_USER", "root"),
+        connection = psycopg2.connect(
+            host=os.getenv("DB_HOST", "db.hbqnolnqcgjkuqzhukal.supabase.co"),
+            user=os.getenv("DB_USER", "postgres"),
             password=os.getenv("DB_PASS", ""),
-            database=os.getenv("DB_NAME", "dromane_db")
+            database=os.getenv("DB_NAME", "postgres"),
+            port=int(os.getenv("DB_PORT", 5432)),
+            sslmode="require"
         )
         return connection
-    except mysql.connector.Error as err:
-        print(f"Error connecting to MySQL: {err}")
+    except psycopg2.Error as err:
+        print(f"Error connecting to PostgreSQL: {err}")
         raise
