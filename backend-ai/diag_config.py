@@ -1,0 +1,3 @@
+from config import JWT_SECRET, JWT_ALGORITHM
+print(f"SECRET: {JWT_SECRET}")
+print(f"ALGORITHM: {JWT_ALGORITHM}")
