@@ -10,20 +10,38 @@ const getHeaders = () => {
 };
 
 const handleResponse = async (response, defaultMessage) => {
+    let responseText = "";
+    try {
+        responseText = await response.text();
+    } catch (e) {
+        // Fallback if text() fails
+    }
+
     if (!response.ok) {
         let errorMessage = defaultMessage;
-        try {
-
-            const errorJson = await response.json();
-            errorMessage = errorJson.detail || errorJson.message || errorJson.error || errorMessage;
-        } catch (e) {
-            const text = await response.text();
-            console.error(`API Error (${defaultMessage}):`, text);
+        if (responseText) {
+            try {
+                const errorJson = JSON.parse(responseText);
+                errorMessage = errorJson.detail || errorJson.message || errorJson.error || errorMessage;
+            } catch (e) {
+                errorMessage = responseText || `Server Error (${response.status})`;
+            }
+        } else {
             errorMessage = `Server Error (${response.status})`;
         }
         throw new Error(errorMessage);
     }
-    return response.json();
+
+    if (!responseText || responseText.trim() === "") {
+        return {};
+    }
+
+    try {
+        return JSON.parse(responseText);
+    } catch (e) {
+        console.error(`Failed to parse JSON response (${defaultMessage}):`, responseText);
+        return { raw: responseText };
+    }
 };
 
 export const summarizeDocument = async () => {
@@ -66,28 +84,19 @@ export const getDocuments = async () => {
         method: 'GET',
         headers: getHeaders(),
     });
-    if (!response.ok) throw new Error('Failed to fetch documents');
-    return response.json();
+    return handleResponse(response, 'Failed to fetch documents');
 };
 
 export const checkHealth = async () => {
     const response = await fetch(`${AI_API_URL}/`);
-    return response.json();
+    return handleResponse(response, 'Health check failed');
 };
 
 export const getProtectedData = async () => {
     const response = await fetch(`${AI_API_URL}/protected`, {
         headers: getHeaders(),
     });
-
-    if (!response.ok) {
-        if (response.status === 401) {
-            throw new Error("Unauthorized");
-        }
-        throw new Error("Failed to fetch data");
-    }
-
-    return response.json();
+    return handleResponse(response, 'Failed to fetch protected data');
 };
 
 export const uploadDocument = async (file) => {
@@ -138,11 +147,7 @@ export const updateProfile = async (name, email) => {
         body: JSON.stringify({ name, email })
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.error || 'Failed to update profile');
-    }
-
+    const data = await handleResponse(response, 'Failed to update profile');
 
     // Update local storage if successful
     if (data.token) localStorage.setItem('token', data.token);
@@ -164,10 +169,7 @@ export const uploadProfilePicture = async (file) => {
         body: formData
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.error || 'Failed to upload profile picture');
-    }
+    const data = await handleResponse(response, 'Failed to upload profile picture');
 
     // Update local storage if successful
     if (data.user) {
@@ -184,11 +186,7 @@ export const changePassword = async (currentPassword, newPassword) => {
         body: JSON.stringify({ currentPassword, newPassword })
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.error || 'Failed to change password');
-    }
-    return data;
+    return handleResponse(response, 'Failed to change password');
 };
 
 // Alias for uploadDocument
