@@ -15,13 +15,13 @@ export const login = async (email, password) => {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
         } else {
-            throw new Error(data.error || 'Login failed');
+            throw new Error(data.message || data.error || 'Login failed');
         }
         return data;
     } catch (error) {
         // Handle network errors separately
         if (error.message === 'Failed to fetch') {
-            throw new Error('Cannot connect to server. Make sure the PHP backend is running on port 8000.');
+            throw new Error('Cannot connect to server. Ensure Backend is running.');
         }
         throw error;
     }
@@ -38,7 +38,7 @@ export const register = async (name, email, password) => {
 
     const data = await response.json();
     if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
+        throw new Error(data.message || data.error || 'Registration failed');
     }
     return data;
 };
@@ -87,7 +87,7 @@ export const googleLogin = async (googleData) => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
     } else {
-        throw new Error(data.error || 'Google login failed');
+        throw new Error(data.message || data.error || 'Google login failed');
     }
     return data;
 };
@@ -106,7 +106,7 @@ export const githubLogin = async (githubData) => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
     } else {
-        throw new Error(data.error || 'GitHub login failed');
+        throw new Error(data.message || data.error || 'GitHub login failed');
     }
     return data;
 };

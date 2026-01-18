@@ -6,8 +6,7 @@ from fastapi import HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import mysql.connector
 from config import JWT_SECRET, JWT_ALGORITHM
 from database import get_db_connection
 
@@ -58,14 +57,13 @@ def authenticate_user(email: str, password: str):
     conn = None
     try:
         conn = get_db_connection()
-        # In psycopg2, we use RealDictCursor for dictionary-like results
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
         
         if not user or not verify_password(password, user['password_hash']):
             return False
-        return dict(user) # Convert RealDictRow to regular dict
+        return user
     except Exception as e:
         print(f"Auth Error: {e}")
         return False
@@ -78,22 +76,21 @@ def register_user(user_data: UserRegister):
     conn = None
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT id FROM users WHERE email = %s", (user_data.email,))
         if cursor.fetchone():
             raise HTTPException(status_code=400, detail="Email already registered")
         
         hashed_pw = get_password_hash(user_data.password)
-        # PostgreSQL uses RETURNING id instead of lastrowid
         cursor.execute(
-            "INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s) RETURNING id",
+            "INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)",
             (user_data.name, user_data.email, hashed_pw)
         )
-        new_id = cursor.fetchone()['id']
+        new_id = cursor.lastrowid
         conn.commit()
         
         return {"id": new_id, "name": user_data.name, "email": user_data.email}
-    except psycopg2.Error as err:
+    except mysql.connector.Error as err:
         print(f"DB Error: {err}")
         raise HTTPException(status_code=500, detail=f"Database error during registration: {str(err)}")
     finally:

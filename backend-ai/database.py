@@ -1,28 +1,37 @@
 import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import mysql.connector
+from mysql.connector import Error
 from dotenv import load_dotenv
 
 load_dotenv()
 
 def get_db_connection():
     """
-    Establishes a connection to the PostgreSQL database (Supabase).
+    Establishes a connection to the MySQL database.
     Returns:
-        psycopg2.extensions.connection: The database connection object.
+        mysql.connector.connection.MySQLConnection: The database connection object.
     Raises:
-        psycopg2.Error: If the connection fails.
+        mysql.connector.Error: If the connection fails.
     """
+    db_host = os.getenv("DB_HOST", "localhost")
+    db_user = os.getenv("DB_USER", "root")
+    db_pass = os.getenv("DB_PASS", "")
+    db_name = os.getenv("DB_NAME", "dromane_db")
+    db_port = os.getenv("DB_PORT", "3306")
+
+    if not db_host or not db_user:
+        print("Error: DB_HOST or DB_USER not found in environment variables.")
+        raise ValueError("Missing database configuration in .env")
+
     try:
-        connection = psycopg2.connect(
-            host=os.getenv("DB_HOST", "db.hbqnolnqcgjkuqzhukal.supabase.co"),
-            user=os.getenv("DB_USER", "postgres"),
-            password=os.getenv("DB_PASS", ""),
-            database=os.getenv("DB_NAME", "postgres"),
-            port=int(os.getenv("DB_PORT", 5432)),
-            sslmode="require"
+        connection = mysql.connector.connect(
+            host=db_host,
+            user=db_user,
+            password=db_pass,
+            database=db_name,
+            port=int(db_port)
         )
         return connection
-    except psycopg2.Error as err:
-        print(f"Error connecting to PostgreSQL: {err}")
+    except Error as err:
+        print(f"Error connecting to MySQL: {err}")
         raise

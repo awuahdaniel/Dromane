@@ -2,18 +2,16 @@ from database import get_db_connection
 import json
 from typing import List, Dict, Optional
 import datetime
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import mysql.connector
 
 class ResearchContextManager:
     def __init__(self):
-        # No heavy ML models init here
         pass
     
     def get_or_create_session(self, user_id: int, inferred_topic: str = None) -> int:
         """Get active session or create new one"""
         conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor = conn.cursor(dictionary=True)
         
         try:
             # Check for active session
@@ -34,10 +32,11 @@ class ResearchContextManager:
             
             cursor.execute("""
                 INSERT INTO research_sessions (user_id, primary_topic, is_active)
-                VALUES (%s, %s, TRUE) RETURNING id
+                VALUES (%s, %s, TRUE)
             """, (user_id, topic))
             
-            new_id = cursor.fetchone()['id']
+            # MySQL way to get ID
+            new_id = cursor.lastrowid
             conn.commit()
             return new_id
             
@@ -56,8 +55,6 @@ class ResearchContextManager:
         cursor = conn.cursor()
         
         try:
-            # PostgreSQL uses RETURNING id optionally, but we don't need it here.
-            # %s is used for both MySQL and PostgreSQL in psycopg2
             cursor.execute("""
                 INSERT INTO research_entries 
                 (session_id, query, response, extracted_facts, query_embedding, sources_used)
@@ -84,7 +81,7 @@ class ResearchContextManager:
     def retrieve_context(self, session_id: int, current_query: str, limit: int = 10) -> Dict:
         """Retrieve relevant context using only DB history (No Embeddings)"""
         conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor = conn.cursor(dictionary=True)
         context = {
             'session_summary': None,
             'recent_entries': [],
@@ -127,7 +124,7 @@ class ResearchContextManager:
     def update_session_topic_if_needed(self, session_id: int, query: str):
         """Update generic topic name if specific query provided"""
         conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor = conn.cursor(dictionary=True)
         try:
             cursor.execute("SELECT primary_topic FROM research_sessions WHERE id = %s", (session_id,))
             result = cursor.fetchone()
@@ -146,7 +143,7 @@ class ResearchContextManager:
     def get_user_sessions(self, user_id: int) -> List[Dict]:
         """Get all sessions for a user"""
         conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor = conn.cursor(dictionary=True)
         try:
             cursor.execute("""
                 SELECT id, primary_topic, session_summary, updated_at 
@@ -159,6 +156,23 @@ class ResearchContextManager:
         except Exception as e:
             print(f"Error getting user sessions: {e}")
             return []
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+    
+    def delete_session(self, session_id: int, user_id: int) -> bool:
+        """Delete a research session"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("DELETE FROM research_sessions WHERE id = %s AND user_id = %s", (session_id, user_id))
+            conn.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            print(f"Error deleting session: {e}")
+            return False
         finally:
             if cursor:
                 cursor.close()

@@ -219,7 +219,7 @@ export default function CodeAnalyzer() {
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: -10 }}
-                                                className="prose prose-sm dark:prose-invert max-w-none"
+                                                className="prose prose-sm dark:prose-invert max-w-none text-gray-900 dark:text-white prose-p:text-gray-900 dark:prose-p:text-white prose-headings:text-gray-900 dark:prose-headings:text-white prose-strong:text-gray-900 dark:prose-strong:text-white prose-li:text-gray-900 dark:prose-li:text-white"
                                             >
                                                 <ReactMarkdown>{String(explanation || '')}</ReactMarkdown>
                                             </motion.div>

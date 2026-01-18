@@ -25,10 +25,8 @@ services:
 
   # PHP Backend (Auth)
   php-backend:
-    image: php:8.2-cli
+    build: ./backend-auth
     container_name: dromane-php-backend
-    working_dir: /app
-    command: php -S 0.0.0.0:8000
     ports:
       - "8000:8000"
     volumes:
@@ -39,9 +37,44 @@ services:
       DB_USER: ${DB_USER:-root}
       DB_PASS: ${DB_PASS:-}
       JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_key_change_me}
+      FRONTEND_URL: http://localhost:5173
     depends_on:
       mysql:
         condition: service_healthy
+    networks:
+      - dromane-network
+
+  # Python Backend (AI)
+  ai-backend:
+    build: ./backend-ai
+    container_name: dromane-ai-backend
+    ports:
+      - "8001:8001"
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      DB_HOST: mysql
+      DB_NAME: ${DB_NAME:-dromane_db}
+      DB_USER: ${DB_USER:-root}
+      DB_PASS: ${DB_PASS:-}
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_key_change_me}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - dromane-network
+
+  # Frontend (Vite/React)
+  frontend:
+    build: ./frontend
+    container_name: dromane-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_AUTH_API_URL: http://localhost:8000
+      VITE_AI_API_URL: http://localhost:8001
+    depends_on:
+      - php-backend
+      - ai-backend
     networks:
       - dromane-network
 

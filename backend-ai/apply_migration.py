@@ -11,7 +11,8 @@ def get_db_connection():
             host=os.getenv("DB_HOST", "localhost"),
             user=os.getenv("DB_USER", "root"),
             password=os.getenv("DB_PASS", ""),
-            database=os.getenv("DB_NAME", "dromane_db")
+            database=os.getenv("DB_NAME", "dromane_db"),
+            port=int(os.getenv("DB_PORT", "3306"))
         )
         return connection
     except mysql.connector.Error as err:

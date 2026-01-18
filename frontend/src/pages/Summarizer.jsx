@@ -182,7 +182,7 @@ export default function Summarizer() {
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: -10 }}
-                                                className="prose prose-sm dark:prose-invert max-w-none"
+                                                className="prose prose-sm dark:prose-invert max-w-none text-gray-900 dark:text-gray-100"
                                             >
                                                 <ReactMarkdown>{String(summary || '')}</ReactMarkdown>
                                             </motion.div>
