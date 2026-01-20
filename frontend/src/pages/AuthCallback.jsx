@@ -15,15 +15,17 @@ export default function AuthCallback() {
             try {
                 localStorage.setItem("token", token);
 
-                // Decode JWT to get user info (sub, email)
-                // Part 5 of instructions: 'sub' => $userId, 'email' => $email
+                // Decode JWT to get user info
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 const user = {
                     id: payload.sub,
-                    email: payload.email
+                    email: payload.email,
+                    name: payload.name,
+                    profile_picture: payload.profile_picture
                 };
 
                 localStorage.setItem("user", JSON.stringify(user));
+
 
                 // Update context to reflect login immediately
                 updateAuth(token, user);

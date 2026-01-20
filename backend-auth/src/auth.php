@@ -15,7 +15,7 @@ function loginUser() {
     $user = $stmt->fetch();
 
     if ($user && password_verify($data->password, $user['password_hash'])) {
-        $jwt = createJWT($user['id'], $user['email']);
+        $jwt = createJWT($user['id'], $user['email'], $user['name'], $user['profile_picture']);
         
         echo json_encode([
             "message" => "Login successful",
@@ -101,7 +101,7 @@ function updateProfile() {
     $stmt = $pdo->prepare("UPDATE users SET name = ?, email = ? WHERE id = ?");
     if ($stmt->execute([$name, $email, $user->sub])) {
         // Generate new token if email changed, or just return success with updated user info
-        $newToken = createJWT($user->sub, $email);
+        $newToken = createJWT($user->sub, $email, $name, $profile_picture);
         echo json_encode([
             "message" => "Profile updated successfully",
             "token" => $newToken,

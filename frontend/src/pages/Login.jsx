@@ -4,6 +4,8 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Github, Eye, EyeOff } from 'lucide-react';
+import { AUTH_API_URL } from '../lib/config';
+
 
 import logo from '../assets/logo.png';
 
@@ -42,12 +44,13 @@ export default function Login() {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = 'http://localhost:8000/auth/google';
+        window.location.href = `${AUTH_API_URL}/auth/google`;
     };
 
     const handleGithubLogin = () => {
-        window.location.href = 'http://localhost:8000/auth/github';
+        window.location.href = `${AUTH_API_URL}/auth/github`;
     };
+
 
 
 

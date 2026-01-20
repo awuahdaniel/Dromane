@@ -83,13 +83,35 @@ function handleGithubCallback() {
         die('Failed to fetch GitHub email');
     }
 
-    $userId = $profile['id'];
+    $pdo = db();
+    
+    // Check if user exists by email
+    $stmt = $pdo->prepare("SELECT id, name, profile_picture FROM users WHERE email = ?");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
 
-    // Issue JWT
-    $jwt = createJWT($userId, $email);
+    if ($user) {
+        $internalId = $user['id'];
+        $name = $user['name'];
+        $profile_picture = $user['profile_picture'];
+    } else {
+        // Create new user
+        $name = $profile['name'] ?? $profile['login'] ?? 'GitHub User';
+        $stmt = $pdo->prepare("INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)");
+        // Random password hash for OAuth users
+        $password_hash = password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT);
+        $stmt->execute([$name, $email, $password_hash]);
+        $internalId = $pdo->lastInsertId();
+        $profile_picture = null;
+    }
+
+    // Issue JWT with internal ID and profile info
+    $jwt = createJWT($internalId, $email, $name, $profile_picture);
 
     // Send back to React
     $reactUrl = env('FRONTEND_URL');
     header("Location: $reactUrl/auth/callback?token=$jwt&provider=github");
     exit;
 }
+
+

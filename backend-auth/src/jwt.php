@@ -1,16 +1,19 @@
 <?php
 use Firebase\JWT\JWT;
 
-function createJWT($userId, $email) {
+function createJWT($userId, $email, $name = null, $profile_picture = null) {
     $payload = [
         'sub' => (string) $userId,  // Convert to string for Python compatibility
         'email' => $email,
+        'name' => $name,
+        'profile_picture' => $profile_picture,
         'iat' => time(),
         'exp' => time() + (int) env('JWT_EXPIRY')
     ];
 
     return JWT::encode($payload, env('JWT_SECRET'), 'HS256');
 }
+
 
 function validateJWT() {
     $headers = apache_request_headers();

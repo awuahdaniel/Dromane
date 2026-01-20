@@ -3,6 +3,8 @@ import { register } from '../lib/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Github, Eye, EyeOff } from 'lucide-react';
+import { AUTH_API_URL } from '../lib/config';
+
 
 import logo from '../assets/logo.png';
 
@@ -31,12 +33,14 @@ export default function Register() {
     };
 
     const handleGoogleSignup = () => {
-        window.location.href = 'http://localhost:8000/oauth_google.php';
+        window.location.href = `${AUTH_API_URL}/auth/google`;
     };
 
     const handleGithubSignup = () => {
-        window.location.href = 'http://localhost:8000/oauth_github.php';
+        window.location.href = `${AUTH_API_URL}/auth/github`;
     };
+
+
 
 
 
